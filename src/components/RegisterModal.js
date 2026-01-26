@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { X, User, Mail, Lock, Phone, Building2, Loader2 } from 'lucide-react';
+import { X, User, Mail, Lock, Phone, Building2, Loader2, IdCard } from 'lucide-react';
+import { getConfig } from '../config';
 import '../App.css';
 
 const RegisterModal = ({ isOpen, onClose }) => {
@@ -11,6 +12,7 @@ const RegisterModal = ({ isOpen, onClose }) => {
         providerEmail: '',
         multipleCenters: false,
         adminName: '',
+        nic: '',
         adminEmail: '',
         password: '',
         confirmPassword: ''
@@ -48,14 +50,16 @@ const RegisterModal = ({ isOpen, onClose }) => {
             hasMultipleBranches: formData.multipleCenters,
             adminFName: adminFName,
             adminLName: adminLName,
+            nic: formData.nic,
             adminEmail: formData.adminEmail,
             adminPassword: formData.password
         };
 
         try {
-            const response = await axios.post('http://localhost:8686/service-gateway/user/register', payload);
+            const baseUrl = getConfig().baseUrl;
+            const response = await axios.post(`${baseUrl}/user/register`, payload);
             console.log('Registration Success:', response.data);
-            toast.success('Registration submitted successfully!');
+            toast.success(response.data.data);
 
             // Reset form and close
             setFormData({
@@ -64,6 +68,7 @@ const RegisterModal = ({ isOpen, onClose }) => {
                 providerEmail: '',
                 multipleCenters: false,
                 adminName: '',
+                nic: '',
                 adminEmail: '',
                 password: '',
                 confirmPassword: ''
@@ -71,7 +76,7 @@ const RegisterModal = ({ isOpen, onClose }) => {
             onClose();
         } catch (error) {
             console.error('Registration Error:', error);
-            const errorMessage = error.response?.data?.message || 'Registration failed. Please try again.';
+            const errorMessage = error.response?.data?.data || 'Registration failed. Please try again.';
             toast.error(errorMessage);
         } finally {
             setIsLoading(false);
@@ -160,6 +165,17 @@ const RegisterModal = ({ isOpen, onClose }) => {
                                         name="adminEmail"
                                         placeholder="Admin Email"
                                         value={formData.adminEmail}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                </div>
+                                <div className="input-group">
+                                    <IdCard className="input-icon" size={18} />
+                                    <input
+                                        type="text"
+                                        name="nic"
+                                        placeholder="Admin NIC"
+                                        value={formData.nic}
                                         onChange={handleChange}
                                         required
                                     />

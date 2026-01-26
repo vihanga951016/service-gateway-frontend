@@ -4,6 +4,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { User, Lock, ArrowRight, Loader2 } from 'lucide-react';
 import RegisterModal from '../components/RegisterModal';
+import { getConfig } from '../config';
 import '../App.css'; // We'll add specific styles in App.css
 
 const Login = () => {
@@ -18,7 +19,8 @@ const Login = () => {
         setIsLoading(true);
 
         try {
-            const response = await axios.post('http://localhost:8686/service-gateway/user/login', {
+            const baseUrl = getConfig().baseUrl;
+            const response = await axios.post(`${baseUrl}/user/login`, {
                 username,
                 password
             });
@@ -32,7 +34,7 @@ const Login = () => {
                 localStorage.setItem('refreshToken', refreshToken);
             }
 
-            toast.success('Login Successful');
+            // toast.success('Login Successful');
             navigate('/dashboard');
         } catch (error) {
             console.error(error.response.data.data);

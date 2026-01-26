@@ -1,7 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Bell, UserCircle, User, Settings, LogOut, Building } from 'lucide-react';
 import SettingsModal from '../components/SettingsModal';
+import { getConfig } from '../config';
+import { toast } from 'react-toastify';
 
 const Header = () => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -22,11 +25,25 @@ const Header = () => {
         };
     }, []);
 
-    const handleLogout = () => {
-        localStorage.removeItem('isAuthenticated');
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
-        navigate('/login');
+    const handleLogout = async () => {
+        try {
+            const baseUrl = getConfig().baseUrl;
+            const token = localStorage.getItem('token');
+            if (token) {
+                await axios.get(`${baseUrl}/user/logout`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }).then((response) => {
+                    localStorage.removeItem('isAuthenticated');
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('refreshToken');
+                    navigate('/login');
+                });
+            }
+        } catch (error) {
+            console.error('Logout failed:', error);
+        }
     };
 
     const openSettings = () => {
