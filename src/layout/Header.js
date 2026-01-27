@@ -5,12 +5,49 @@ import { Bell, UserCircle, User, Settings, LogOut, Building } from 'lucide-react
 import SettingsModal from '../components/SettingsModal';
 import { getConfig } from '../config';
 import { toast } from 'react-toastify';
+import { getUserHeaderData } from '../services/userService';
 
 const Header = () => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [userInfo, setUserInfo] = useState({
+        name: 'Loading...',
+        email: '',
+        userType: '',
+        provider: ''
+    });
+    const [isLoadingUserData, setIsLoadingUserData] = useState(true);
     const dropdownRef = useRef(null);
     const navigate = useNavigate();
+
+    // Fetch user info from API
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                setIsLoadingUserData(true);
+                const data = await getUserHeaderData();
+                
+                setUserInfo({
+                    name: data.userName || 'User',
+                    email: data.email || '',
+                    userType: data.userType || 'User',
+                    provider: data.serviceCenter || ''
+                });
+            } catch (error) {
+                console.error('Error fetching user header data:', error);
+                // Fallback to localStorage if API fails
+                const name = localStorage.getItem('userName') || 'User';
+                const email = localStorage.getItem('userEmail') || '';
+                const userType = localStorage.getItem('userType') || 'User';
+                const provider = localStorage.getItem('serviceCenter') || '';
+                setUserInfo({ name, email, userType, provider });
+            } finally {
+                setIsLoadingUserData(false);
+            }
+        };
+
+        fetchUserData();
+    }, []);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -26,6 +63,16 @@ const Header = () => {
     }, []);
 
     const handleLogout = async () => {
+        const cleanup = () => {
+            localStorage.removeItem('isAuthenticated');
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userType');
+            navigate('/login');
+        };
+
         try {
             const baseUrl = getConfig().baseUrl;
             const token = localStorage.getItem('token');
@@ -34,15 +81,12 @@ const Header = () => {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
-                }).then((response) => {
-                    localStorage.removeItem('isAuthenticated');
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('refreshToken');
-                    navigate('/login');
                 });
             }
         } catch (error) {
-            console.error('Logout failed:', error);
+            console.error('Logout API call failed:', error);
+        } finally {
+            cleanup();
         }
     };
 
@@ -55,7 +99,7 @@ const Header = () => {
         <>
             <header className="header">
                 <div className="header-left">
-                    <h2>Overview</h2>
+                    <h2>{userInfo.provider}</h2>
                 </div>
                 <div className="header-right">
                     <button className="icon-btn">
@@ -68,11 +112,17 @@ const Header = () => {
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                         >
                             <UserCircle size={32} className="profile-icon" />
-                            <span className="profile-name">Admin User</span>
+                            <span className="profile-name">{userInfo.name}</span>
                         </button>
 
                         {isDropdownOpen && (
                             <div className="profile-dropdown">
+                                <div className="profile-info">
+                                    <div className="profile-info-name">{userInfo.name}</div>
+                                    <div className="profile-info-email">{userInfo.email}</div>
+                                    <div className="profile-info-type">{userInfo.userType}</div>
+                                </div>
+                                <div className="dropdown-divider"></div>
                                 <button onClick={() => { setIsDropdownOpen(false); navigate('/user-profile'); }} className="dropdown-item">
                                     <User size={16} />
                                     <span>User Profile</span>

@@ -25,20 +25,22 @@ const Login = () => {
                 password
             });
 
-            console.log('Login Response:', response.data);
-
             localStorage.setItem('isAuthenticated', 'true');
             if (response.data && response.data.data) {
-                const { token, refreshToken } = response.data.data;
+                const { token, refreshToken, name, email, userType } = response.data.data;
                 localStorage.setItem('token', token);
                 localStorage.setItem('refreshToken', refreshToken);
+
+                // Store user information for profile display
+                if (name) localStorage.setItem('userName', name);
+                if (email) localStorage.setItem('userEmail', email);
+                if (userType) localStorage.setItem('userType', userType);
             }
 
             // toast.success('Login Successful');
             navigate('/dashboard');
         } catch (error) {
-            console.error(error.response.data.data);
-            const errorMessage = error.response?.data?.data || 'Login failed. Please check your credentials.';
+            const errorMessage = error.response?.data?.data || 'Network Error';
             toast.error(errorMessage);
         } finally {
             setIsLoading(false);

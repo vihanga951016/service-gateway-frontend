@@ -10,17 +10,9 @@ import UserProfile from './pages/UserProfile';
 import Users from './pages/Users';
 import Roles from './pages/Roles';
 import ServiceCenters from './pages/ServiceCenters';
+import ProtectedRoute from './components/ProtectedRoute';
 import { ThemeProvider } from './context/ThemeContext';
 import './App.css';
-
-// Simple protected route wrapper
-const ProtectedRoute = ({ children }) => {
-  const isAuthenticated = localStorage.getItem('isAuthenticated');
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  return children;
-};
 
 function App() {
   return (
