@@ -26,7 +26,7 @@ const Header = () => {
             try {
                 setIsLoadingUserData(true);
                 const data = await getUserHeaderData();
-                
+
                 setUserInfo({
                     name: data.userName || 'User',
                     email: data.email || '',
@@ -34,13 +34,16 @@ const Header = () => {
                     provider: data.serviceCenter || ''
                 });
             } catch (error) {
-                console.error('Error fetching user header data:', error);
-                // Fallback to localStorage if API fails
-                const name = localStorage.getItem('userName') || 'User';
-                const email = localStorage.getItem('userEmail') || '';
-                const userType = localStorage.getItem('userType') || 'User';
-                const provider = localStorage.getItem('serviceCenter') || '';
-                setUserInfo({ name, email, userType, provider });
+                if (error?.response?.data?.data) {
+                    if (error?.response?.data?.code === 1) {
+                        toast.error(error?.response?.data?.data);
+                        navigate('/login');
+                    } else {
+                        toast.error(error?.response?.data?.data);
+                    }
+                } else {
+                    toast.error('Network error');
+                }
             } finally {
                 setIsLoadingUserData(false);
             }
@@ -73,20 +76,27 @@ const Header = () => {
             navigate('/login');
         };
 
-        try {
-            const baseUrl = getConfig().baseUrl;
-            const token = localStorage.getItem('token');
-            if (token) {
-                await axios.get(`${baseUrl}/user/logout`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
+        const baseUrl = getConfig().baseUrl;
+        const token = localStorage.getItem('token');
+        if (token) {
+            await axios.get(`${baseUrl}/user/logout`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }).then(() => {
+                cleanup();
+            }).catch((error) => {
+                if (error?.response?.data?.data) {
+                    if (error?.response?.data?.code === 1) {
+                        toast.info("Session expired. Please login again.");
+                        navigate('/login');
+                    } else {
+                        toast.error(error?.response?.data?.data);
                     }
-                });
-            }
-        } catch (error) {
-            console.error('Logout API call failed:', error);
-        } finally {
-            cleanup();
+                } else {
+                    toast.error('Network error');
+                }
+            });
         }
     };
 

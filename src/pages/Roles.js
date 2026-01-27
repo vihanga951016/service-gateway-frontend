@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus, Edit2, Trash2, Shield } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
@@ -8,16 +9,21 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import '../App.css';
 
 const Roles = () => {
+    const navigate = useNavigate();
     const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
     const [editingRole, setEditingRole] = useState(null);
     const [roles, setRoles] = useState([]);
     const [isLoadingRoles, setIsLoadingRoles] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [roleToDelete, setRoleToDelete] = useState(null);
+    const hasFetchedRef = useRef(false);
 
     // Fetch roles from API
     useEffect(() => {
-        fetchRoles();
+        if (!hasFetchedRef.current) {
+            fetchRoles();
+            hasFetchedRef.current = true;
+        }
     }, []);
 
     const fetchRoles = async () => {
@@ -35,8 +41,16 @@ const Roles = () => {
                 setRoles(response.data.data);
             }
         } catch (error) {
-            console.error('Failed to load roles:', error);
-            toast.error('Failed to load roles');
+            if (error?.response?.data?.data) {
+                if (error?.response?.data?.code === 1) {
+                    toast.info("Session expired. Please login again.");
+                    navigate('/login');
+                } else {
+                    toast.error(error?.response?.data?.data);
+                }
+            } else {
+                toast.error('Network error');
+            }
             setRoles([]);
         } finally {
             setIsLoadingRoles(false);
@@ -84,9 +98,16 @@ const Roles = () => {
                 toast.error(response.data?.message || 'Failed to delete role');
             }
         } catch (error) {
-            console.error('Failed to delete role:', error);
-            const errorMessage = error.response?.data?.message || 'Failed to delete role';
-            toast.error(errorMessage);
+            if (error?.response?.data?.data) {
+                if (error?.response?.data?.code === 1) {
+                    toast.info("Session expired. Please login again.");
+                    navigate('/login');
+                } else {
+                    toast.error(error?.response?.data?.data);
+                }
+            } else {
+                toast.error('Network error');
+            }
         } finally {
             setRoleToDelete(null);
         }

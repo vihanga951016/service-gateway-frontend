@@ -4,8 +4,10 @@ import { toast } from 'react-toastify';
 import { X, User, Mail, Lock, Phone, Building2, Loader2, IdCard } from 'lucide-react';
 import { getConfig } from '../config';
 import '../App.css';
+import { useNavigate } from 'react-router-dom';
 
 const RegisterModal = ({ isOpen, onClose }) => {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         providerName: '',
         mobile: '',
@@ -75,9 +77,16 @@ const RegisterModal = ({ isOpen, onClose }) => {
             });
             onClose();
         } catch (error) {
-            console.error('Registration Error:', error);
-            const errorMessage = error.response?.data?.data || 'Registration failed. Please try again.';
-            toast.error(errorMessage);
+            if (error?.response?.data?.data) {
+                if (error?.response?.data?.code === 1) {
+                    toast.info("Session expired. Please login again.");
+                    navigate('/login');
+                } else {
+                    toast.error(error?.response?.data?.data);
+                }
+            } else {
+                toast.error('Network error');
+            }
         } finally {
             setIsLoading(false);
         }
