@@ -118,7 +118,7 @@ const Roles = () => {
             <div className="page-header">
                 <div>
                     <h3>Roles Management</h3>
-                    <p className="subtitle">Manage user roles and permissions</p>
+                    <p className="subtitle">Manage user roles which determine what things a user can do</p>
                 </div>
                 <div className="header-actions">
                     <button className="primary-btn" onClick={handleAddRole}>

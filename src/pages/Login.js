@@ -52,7 +52,7 @@ const Login = () => {
             <div className="login-card">
                 <div className="login-header">
                     <img src="/logo512.png" alt="Service Gateway Logo" className="login-logo" />
-                    <h2>Welcome Back</h2>
+                    {/* <h2>Welcome Back</h2> */}
                     <p>Please sign in to continue</p>
                 </div>
                 <form onSubmit={handleLogin} className="login-form">

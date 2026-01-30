@@ -14,7 +14,8 @@ const Header = () => {
         name: 'Loading...',
         email: '',
         userType: '',
-        provider: ''
+        provider: '',
+        providerId: ''
     });
     const [isLoadingUserData, setIsLoadingUserData] = useState(true);
     const dropdownRef = useRef(null);
@@ -31,7 +32,8 @@ const Header = () => {
                     name: data.userName || 'User',
                     email: data.email || '',
                     userType: data.userType || 'User',
-                    provider: data.serviceCenter || ''
+                    provider: data.serviceCenter || '',
+                    providerId: data.providerId || ''
                 });
             } catch (error) {
                 if (error?.response?.data?.data) {
@@ -73,6 +75,7 @@ const Header = () => {
             localStorage.removeItem('userName');
             localStorage.removeItem('userEmail');
             localStorage.removeItem('userType');
+            localStorage.removeItem('providerId');
             navigate('/login');
         };
 
@@ -108,8 +111,9 @@ const Header = () => {
     return (
         <>
             <header className="header">
-                <div className="header-left">
-                    <h2>{userInfo.provider}</h2>
+                <div className="header-left" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <h2 style={{ margin: 0 }}>{userInfo.provider}</h2>
+                    <span className="badge-pill">{userInfo.providerId}</span>
                 </div>
                 <div className="header-right">
                     <button className="icon-btn">
