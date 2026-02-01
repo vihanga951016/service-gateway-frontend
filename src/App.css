@@ -13,6 +13,9 @@
   --modal-bg: #ffffff;
   --hover-bg: #f1f5f9;
   --transition-speed: 0.3s;
+  --scrollbar-track: #f1f5f9;
+  --scrollbar-thumb: #cbd5e1;
+  --scrollbar-thumb-hover: #94a3b8;
 }
 
 [data-theme='dark'] {
@@ -26,6 +29,9 @@
   --border-color: #334155;
   --modal-bg: #1e293b;
   --hover-bg: rgba(255, 255, 255, 0.1);
+  --scrollbar-track: #0f172a;
+  --scrollbar-thumb: #334155;
+  --scrollbar-thumb-hover: #475569;
 }
 
 
@@ -40,6 +46,32 @@ body {
   background-color: var(--bg-color);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 10px;
+  border: 2px solid var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* Firefox Support */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
 /* Auth Layout */
@@ -238,7 +270,8 @@ body {
 /* App Layout */
 .app-layout {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* Sidebar */
@@ -249,6 +282,8 @@ body {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  height: 100%;
+  overflow-y: auto;
   transition: width var(--transition-speed);
 }
 
@@ -438,11 +473,11 @@ body {
   top: 100%;
   right: 0;
   margin-top: 0.5rem;
-  background: white;
+  background: var(--modal-bg);
   border-radius: 0.75rem;
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  box-shadow: var(--card-shadow);
   width: 240px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
   overflow: hidden;
   animation: fadeIn 0.1s ease-out;
   z-index: 50;
@@ -500,7 +535,7 @@ body {
 
 .dropdown-divider {
   height: 1px;
-  background-color: #e2e8f0;
+  background-color: var(--border-color);
   margin: 0;
 }
 
@@ -518,6 +553,7 @@ body {
   flex: 1;
   padding: 2rem;
   overflow-y: auto;
+  height: calc(100vh - 64px);
 }
 
 .page-container {
@@ -1095,6 +1131,11 @@ body {
   color: #10b981;
 }
 
+.badge-warning {
+  background-color: rgba(255, 159, 64, 0.1);
+  color: #f59e0b;
+}
+
 .badge-info {
   background-color: rgba(59, 130, 246, 0.1);
   color: #3b82f6;
@@ -1120,4 +1161,87 @@ body {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Custom Date Input Styles */
+.custom-date-input {
+  appearance: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+  background-color: var(--modal-bg);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 160px;
+  cursor: pointer;
+  position: relative;
+  /* Ensures native picker matches theme */
+  color-scheme: light;
+}
+
+[data-theme='dark'] .custom-date-input {
+  color-scheme: dark;
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.custom-date-input:hover {
+  border-color: var(--primary-color);
+  background-color: var(--hover-bg);
+}
+
+.custom-date-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  background-color: var(--modal-bg);
+}
+
+/* Customizing the Calendar Icon */
+.custom-date-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+  transition: all 0.2s ease;
+  padding: 2px;
+  border-radius: 4px;
+}
+
+.custom-date-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+  background-color: rgba(148, 163, 184, 0.2) !;
+  transform: scale(1.1);
+}
+
+/* Dark mode specific icon adjustments */
+[data-theme='dark'] .custom-date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(0.9);
+}
+
+/* Modal Select Styles */
+.modal-select {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 0.5rem !important;
+  color: var(--text-primary) !important;
+  font-size: 1rem !important;
+  transition: all var(--transition-speed);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 1rem center !important;
+  cursor: pointer;
+}
+
+.modal-select:focus {
+  outline: none;
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+}
+
+.modal-select option {
+  background-color: var(--modal-bg);
+  color: var(--text-primary);
 }

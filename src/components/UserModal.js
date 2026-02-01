@@ -342,7 +342,6 @@ const UserModal = ({ isOpen, onClose, onSave, user }) => {
                                         value={formData.userType}
                                         onChange={handleChange}
                                         className="modal-select"
-                                        style={{ width: '100%', paddingLeft: '2.5rem', height: '100%', border: 'none', color: '#fff', background: 'transparent', outline: 'none' }}
                                     >
                                         <option value="USER">User</option>
                                         <option value="ADMIN">Admin</option>
@@ -362,7 +361,6 @@ const UserModal = ({ isOpen, onClose, onSave, user }) => {
                                             onChange={handleChange}
                                             className="modal-select"
                                             required
-                                            style={{ width: '100%', paddingLeft: '2.5rem', height: '100%', border: 'none', color: '#fff', background: 'transparent', outline: 'none' }}
                                         >
                                             <option value="">Select Role</option>
                                             {roles.map(role => (
@@ -383,7 +381,6 @@ const UserModal = ({ isOpen, onClose, onSave, user }) => {
                                             value={formData.serviceCenterId}
                                             onChange={handleChange}
                                             className="modal-select"
-                                            style={{ width: '100%', paddingLeft: '2.5rem', height: '100%', border: 'none', color: '#fff', background: 'transparent', outline: 'none' }}
                                         >
                                             <option value="">Select Service Center</option>
                                             {serviceCenters.map(center => (

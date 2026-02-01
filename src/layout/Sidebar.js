@@ -24,7 +24,7 @@ const Sidebar = () => {
 
                 if (response.data && response.data.data) {
                     console.log(response.data.data);
-                    
+
                     setPermissions(response.data.data);
                 }
             } catch (error) {
@@ -84,13 +84,13 @@ const Sidebar = () => {
                     </NavLink>
                 )}
 
-                {hasPermission('Service Center Management') && (
+                {hasPermission('Centers Management') && (
                     <NavLink
                         to="/service-centers"
                         className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
                     >
                         <MapPin size={20} />
-                        <span>Service Centers</span>
+                        <span>Centers</span>
                     </NavLink>
                 )}
             </nav>

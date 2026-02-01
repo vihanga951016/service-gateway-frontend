@@ -375,7 +375,7 @@ const Users = () => {
                                                 {/* <Phone size={14} className="text-muted" />
                                                 {user.contact || user.mobile} */}
                                                 {
-                                                    user.mobile ? (
+                                                    user.mobile !== null && user.mobile !== "" ? (
                                                         <button className='icon-action-btn text-success' onClick={() => handleDecrypt(user.mobile)}>View Contact</button>
                                                     ) : (
                                                         <span> -- </span>
@@ -387,7 +387,7 @@ const Users = () => {
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                 {/* <FileText size={14} className="text-muted" /> */}
                                                 {
-                                                    user.nic ? (
+                                                    user.nic && user.nic !== "" ? (
                                                         <button className='icon-action-btn text-success' onClick={() => handleDecrypt(user.nic)}>View NIC</button>
                                                     ) : (
                                                         <span> -- </span>

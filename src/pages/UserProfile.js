@@ -11,18 +11,18 @@ const UserProfile = () => {
     // Static data for design demonstration
     const [user, setUser] = useState({
         userId: 1,
-        fname: "Yasinth",
-        lname: "Gunawardana",
-        email: "yasinth@example.com",
-        contact: "+94 77 123 4567",
-        nic: "951234567V",
-        userType: "ADMIN",
-        role: "System Administrator",
-        roleId: 1,
-        serviceCenter: "Head Office - Colombo",
-        serviceCenterId: 101,
-        joinDate: "Jan 15, 2024",
-        avatarColor: "linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%)"
+        fname: "",
+        lname: "",
+        email: "",
+        contact: "",
+        nic: "",
+        userType: "",
+        role: "",
+        roleId: null,
+        serviceCenter: "",
+        serviceCenterId: null,
+        joinDate: "",
+        avatarColor: ""
     });
 
     const [isEditing, setIsEditing] = useState(false);
@@ -64,7 +64,16 @@ const UserProfile = () => {
                 });
             }
         } catch (error) {
-            console.error("Error fetching profile details:", error);
+            if (error?.response?.data?.data) {
+                if (error?.response?.data?.code === 1) {
+                    toast.info("Session expired. Please login again.");
+                    navigate('/login');
+                } else {
+                    toast.error(error?.response?.data?.data);
+                }
+            } else {
+                toast.error('Network error');
+            }
         }
     };
 
@@ -105,15 +114,18 @@ const UserProfile = () => {
             }
         } catch (error) {
             if (error?.response?.data?.data) {
-                if (error?.response?.data?.code === 1) {
-                    toast.info("Session expired. Please login again.");
-                    navigate('/login');
+                if (error?.response?.data?.data) {
+                    if (error?.response?.data?.code === 1) {
+                        toast.info("Session expired. Please login again.");
+                        navigate('/login');
+                    } else {
+                        toast.error(error?.response?.data?.data);
+                    }
                 } else {
-                    toast.error(error?.response?.data?.data);
+                    toast.error('Network error');
                 }
             } else {
-                console.error("Error fetching profile data:", error);
-                toast.error("Failed to load profile data");
+                toast.error('Network error');
             }
         }
     };
