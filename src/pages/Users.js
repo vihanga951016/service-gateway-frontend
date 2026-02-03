@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Search, ChevronLeft, ChevronRight, User, Phone, Mail, FileText, Briefcase, CheckCircle, Clock, Edit2, Trash2, ShieldCheck, ShieldAlert } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
@@ -26,6 +26,11 @@ const Users = () => {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [userToDelete, setUserToDelete] = useState(null);
 
+    // Approval/Rejection State
+    const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
+    const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+    const [userToAct, setUserToAct] = useState(null);
+
     // Add User Modal State
     const [isUserModalOpen, setIsUserModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
@@ -37,8 +42,13 @@ const Users = () => {
         content: ''
     });
 
+    const lastFetchParams = useRef(null);
     useEffect(() => {
-        fetchUsers();
+        const currentParams = JSON.stringify({ currentPage, searchQuery, searchFilter });
+        if (lastFetchParams.current !== currentParams) {
+            fetchUsers();
+            lastFetchParams.current = currentParams;
+        }
     }, [currentPage, searchQuery, searchFilter]);
 
     const fetchUsers = async () => {
@@ -138,23 +148,78 @@ const Users = () => {
         setIsUserModalOpen(true);
     };
 
-    const handleApproveUser = async (user) => {
+    const handleApproveClick = (user) => {
+        setUserToAct(user);
+        setIsApproveDialogOpen(true);
+    };
+
+    const handleRejectClick = (user) => {
+        setUserToAct(user);
+        setIsRejectDialogOpen(true);
+    };
+
+    const confirmApproveUser = async () => {
+        if (!userToAct) return;
         try {
             const baseUrl = getConfig().baseUrl;
             const token = localStorage.getItem('token');
-            // Assuming approval endpoint or logic
-            // For now just toast as placeholder logic wasn't fully detailed in provided snippet
-            await axios.post(`${baseUrl}/user/approve/${user.id}`, {}, {
+            await axios.put(`${baseUrl}/user/${userToAct.id}/approve`, {
+                userId: userToAct.id
+            }, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
             });
-            toast.success(`User ${user.name} approved successfully`);
+            toast.success(`User ${userToAct.name || userToAct.firstName} approved successfully`);
             fetchUsers();
         } catch (error) {
-            toast.error('Failed to approve user');
+            if (error?.response?.data?.data) {
+                if (error?.response?.data?.code === 1) {
+                    toast.info("Session expired. Please login again.");
+                    navigate('/login');
+                } else {
+                    toast.error(error?.response?.data?.data);
+                }
+            } else {
+                toast.error('Network error');
+            }
+        } finally {
+            setUserToAct(null);
+            setIsApproveDialogOpen(false);
         }
     };
+
+    const confirmRejectUser = async () => {
+        if (!userToAct) return;
+        try {
+            const baseUrl = getConfig().baseUrl;
+            const token = localStorage.getItem('token');
+            await axios.put(`${baseUrl}/user/${userToAct.id}/reject`, {
+                userId: userToAct.id
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            toast.success(`User ${userToAct.name || userToAct.firstName} rejected successfully`);
+            fetchUsers();
+        } catch (error) {
+            if (error?.response?.data?.data) {
+                if (error?.response?.data?.code === 1) {
+                    toast.info("Session expired. Please login again.");
+                    navigate('/login');
+                } else {
+                    toast.error(error?.response?.data?.data);
+                }
+            } else {
+                toast.error('Network error');
+            }
+        } finally {
+            setUserToAct(null);
+            setIsRejectDialogOpen(false);
+        }
+    };
+
 
     const handleDeleteClick = (user) => {
         setUserToDelete(user);
@@ -271,6 +336,36 @@ const Users = () => {
                 cancelText="Cancel"
             />
 
+            <ConfirmDialog
+                isOpen={isApproveDialogOpen}
+                onClose={() => {
+                    setIsApproveDialogOpen(false);
+                    setUserToAct(null);
+                }}
+                onConfirm={confirmApproveUser}
+                title="Approve User"
+                message={`Are you sure you want to approve ${userToAct?.name || (userToAct?.firstName + ' ' + userToAct?.lastName)}?`}
+                confirmText="Approve"
+                cancelText="Cancel"
+                type="success"
+                icon={ShieldCheck}
+            />
+
+            <ConfirmDialog
+                isOpen={isRejectDialogOpen}
+                onClose={() => {
+                    setIsRejectDialogOpen(false);
+                    setUserToAct(null);
+                }}
+                onConfirm={confirmRejectUser}
+                title="Reject User"
+                message={`Are you sure you want to reject ${userToAct?.name || (userToAct?.firstName + ' ' + userToAct?.lastName)}?`}
+                confirmText="Reject"
+                cancelText="Cancel"
+                type="warning"
+                icon={ShieldAlert}
+            />
+
             <InfoModal
                 isOpen={infoModal.isOpen}
                 onClose={() => setInfoModal({ ...infoModal, isOpen: false })}
@@ -337,6 +432,7 @@ const Users = () => {
                                 <th>User Type</th>
                                 <th>Role</th>
                                 <th>Service Center</th>
+                                <th>Status</th>
                                 <th className="text-right">Actions</th>
                             </tr>
                         </thead>
@@ -411,29 +507,40 @@ const Users = () => {
                                             {user.serviceCenter ? (
                                                 <div className="service-center-info">
                                                     <div className="font-medium">{user.serviceCenter.name || user.serviceCenter}</div>
-                                                    <div className={`status-text ${user.isProviderApproved ? 'text-success' : 'text-warning'}`} style={{ fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                        {user.isProviderApproved ? (
-                                                            <><CheckCircle size={10} /> Approved</>
-                                                        ) : (
-                                                            <><Clock size={10} /> Pending</>
-                                                        )}
-                                                    </div>
                                                 </div>
                                             ) : (
                                                 <span className="text-muted">-</span>
                                             )}
                                         </td>
                                         <td>
+                                            <div className={`status-text ${user.providerApproved === "approved" ? 'text-success' : 'text-warning'}`} style={{ fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                {user.providerApproved === "approved" ? (
+                                                    <><CheckCircle size={10} /> Approved</>
+                                                ) : (
+                                                    <><Clock size={10} /> Pending</>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td>
                                             <div className="action-buttons justify-end">
                                                 {/* Approve Button - Only if not already approved or strictly for providers? Assuming logical check */}
-                                                {!user.isProviderApproved && user.serviceCenter && (
-                                                    <button
-                                                        className="icon-action-btn text-success"
-                                                        title="Approve"
-                                                        onClick={() => handleApproveUser(user)}
-                                                    >
-                                                        <ShieldCheck size={16} />
-                                                    </button>
+                                                {user.providerApproved === "pending" && user.serviceCenter && (
+                                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                                        <button
+                                                            className="icon-action-btn text-success"
+                                                            title="Approve"
+                                                            onClick={() => handleApproveClick(user)}
+                                                        >
+                                                            <ShieldCheck size={16} />
+                                                        </button>
+                                                        <button
+                                                            className="icon-action-btn text-warning"
+                                                            title="Reject"
+                                                            onClick={() => handleRejectClick(user)}
+                                                        >
+                                                            <ShieldAlert size={16} />
+                                                        </button>
+                                                    </div>
                                                 )}
 
                                                 <button

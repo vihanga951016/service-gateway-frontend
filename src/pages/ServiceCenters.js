@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { MapPin, Phone, Building, Plus, Edit2, Trash2, ChevronLeft, ChevronRight, Search, Clock, Loader2 } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { MapPin, Phone, Building, Plus, Edit2, Trash2, ChevronLeft, ChevronRight, Search, Clock, Loader2, Eye } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import ServiceCenterModal from '../components/ServiceCenterModal';
@@ -18,6 +18,7 @@ const ServiceCenters = () => {
     const [selectedCenter, setSelectedCenter] = useState(null);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [centerToDelete, setCenterToDelete] = useState(null);
+    const [isViewOnly, setIsViewOnly] = useState(false);
 
     const itemsPerPage = 10;
 
@@ -48,9 +49,14 @@ const ServiceCenters = () => {
     }, [currentPage, searchQuery, navigate]);
 
     // Debounce Search & Fetch
+    const lastFetchParams = useRef(null);
     useEffect(() => {
-        fetchCenters();
-    }, [fetchCenters]);
+        const currentParams = JSON.stringify({ currentPage, searchQuery });
+        if (lastFetchParams.current !== currentParams) {
+            fetchCenters();
+            lastFetchParams.current = currentParams;
+        }
+    }, [fetchCenters, currentPage, searchQuery]);
 
     const handleSearch = (e) => {
         setSearchQuery(e.target.value);
@@ -64,12 +70,18 @@ const ServiceCenters = () => {
 
     const handleAddClick = () => {
         setSelectedCenter(null);
+        setIsViewOnly(false);
         setIsModalOpen(true);
     };
 
     const handleEditClick = (center) => {
         setSelectedCenter(center);
+        setIsViewOnly(false);
         setIsModalOpen(true);
+    };
+
+    const handleViewClick = (center) => {
+        navigate(`/service-centers/${center.id}`);
     };
 
     const handleDeleteClick = (id) => {
@@ -93,7 +105,7 @@ const ServiceCenters = () => {
                     toast.error(error?.response?.data?.data);
                 }
             } else {
-                toast.error('Failed to load service centers');
+                toast.error('Network error');
             }
         } finally {
             setIsDeleteDialogOpen(false);
@@ -113,6 +125,7 @@ const ServiceCenters = () => {
                 onClose={() => setIsModalOpen(false)}
                 onSave={handleSaveCenter}
                 initialData={selectedCenter}
+                isViewOnly={isViewOnly}
             />
 
             <ConfirmDialog
@@ -198,6 +211,13 @@ const ServiceCenters = () => {
                                                     <td>
                                                         <div className="action-buttons justify-end">
                                                             <button
+                                                                className="icon-action-btn text-primary"
+                                                                title="View"
+                                                                onClick={() => handleViewClick(center)}
+                                                            >
+                                                                <Eye size={16} />
+                                                            </button>
+                                                            <button
                                                                 className="icon-action-btn"
                                                                 title="Edit"
                                                                 onClick={() => handleEditClick(center)}
@@ -239,9 +259,22 @@ const ServiceCenters = () => {
                                             <h5 style={{ margin: 0, fontSize: '1.1rem' }}>{center.name}</h5>
                                             <div className="action-buttons">
                                                 <button
+                                                    className="icon-action-btn text-primary"
+                                                    title="View"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleViewClick(center);
+                                                    }}
+                                                >
+                                                    <Eye size={16} />
+                                                </button>
+                                                <button
                                                     className="icon-action-btn"
                                                     title="Edit"
-                                                    onClick={() => handleEditClick(center)}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleEditClick(center);
+                                                    }}
                                                 >
                                                     <Edit2 size={16} />
                                                 </button>

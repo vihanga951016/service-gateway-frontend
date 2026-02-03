@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Mail, Phone, MapPin, Globe, Shield, Clock, Building, CheckCircle, AlertCircle, Search, Filter, Edit2, Save, X } from 'lucide-react';
 import '../App.css';
 import { getServiceProviderProfile, updateServiceProviderProfile, getSummarizedServiceCenters } from '../services/serviceProviderService';
@@ -25,9 +25,14 @@ const ServiceProviderProfile = () => {
 
     const [serviceCenters, setServiceCenters] = useState([]);
 
+    const fetchInitiated = useRef(false);
+
     useEffect(() => {
-        fetchProfile();
-        fetchServiceCenters();
+        if (!fetchInitiated.current) {
+            fetchProfile();
+            fetchServiceCenters();
+            fetchInitiated.current = true;
+        }
     }, []);
 
     const fetchProfile = async () => {
@@ -96,7 +101,6 @@ const ServiceProviderProfile = () => {
                 contact: editFormData.contact,
                 address: editFormData.address,
                 website: editFormData.website,
-                joinDate: editFormData.joinDate,
                 description: editFormData.description
             });
 
@@ -310,7 +314,7 @@ const ServiceProviderProfile = () => {
                                             placeholder="Registration Number"
                                             value={editFormData.regNo}
                                             onChange={handleInputChange}
-                                            required
+                                            disabled
                                         />
                                     </div>
 
@@ -388,7 +392,7 @@ const ServiceProviderProfile = () => {
                                     </div>
                                 </div>
                             </div>
-                            <div className="modal-footer" style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+                            <div className="modal-footer" style={{ marginBottom: '1.5rem', marginRight: '1.5rem', marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
                                 <button type="button" className="secondary-btn" onClick={() => setIsEditing(false)}>Cancel</button>
                                 <button type="submit" className="primary-btn">
                                     <Save size={18} />

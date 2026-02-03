@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Shield, MapPin } from 'lucide-react';
+import { LayoutDashboard, Users, Shield, MapPin, Briefcase } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { getConfig } from '../config';
@@ -93,6 +93,14 @@ const Sidebar = () => {
                         <span>Centers</span>
                     </NavLink>
                 )}
+
+                <NavLink
+                    to="/services"
+                    className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                >
+                    <Briefcase size={20} />
+                    <span>Services</span>
+                </NavLink>
             </nav>
             {/* Logout moved to Profile Dropdown */}
         </aside>

@@ -123,10 +123,7 @@ const UserModal = ({ isOpen, onClose, onSave, user }) => {
         try {
             const baseUrl = getConfig().baseUrl;
             const token = localStorage.getItem('token');
-            const response = await axios.post(`${baseUrl}/service-center/get-all`, {
-                page: 0,
-                size: 100 // Fetch reasonably large amount for dropdown
-            }, {
+            const response = await axios.get(`${baseUrl}/service-center/dropdown`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -344,7 +341,7 @@ const UserModal = ({ isOpen, onClose, onSave, user }) => {
                                         className="modal-select"
                                     >
                                         <option value="USER">User</option>
-                                        <option value="ADMIN">Admin</option>
+                                        {/* <option value="ADMIN">Admin</option> */}
                                         <option value="EMPLOYEE">Employee</option>
                                     </select>
                                 </div>

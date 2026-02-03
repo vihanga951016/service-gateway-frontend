@@ -5,7 +5,7 @@ import { addServiceCenter, updateServiceCenter } from '../services/serviceProvid
 import '../App.css';
 import { useNavigate } from 'react-router-dom';
 
-const ServiceCenterModal = ({ isOpen, onClose, onSave, initialData }) => {
+const ServiceCenterModal = ({ isOpen, onClose, onSave, initialData, isViewOnly = false }) => {
     const navigate = useNavigate();
     const [isSaving, setIsSaving] = useState(false);
     const [formData, setFormData] = useState({
@@ -81,6 +81,18 @@ const ServiceCenterModal = ({ isOpen, onClose, onSave, initialData }) => {
 
         if (initialData && initialData.id) {
             submissionData.id = initialData.id;
+            if (submissionData.openTime === initialData.openTime) {
+                const timeWithSeconds = submissionData.openTime;
+                delete submissionData.openTime;
+                const timeWithoutSeconds = timeWithSeconds.split(':').slice(0, 2).join(':');
+                submissionData.openTime = timeWithoutSeconds;
+            }
+            if (submissionData.closeTime === initialData.closeTime) {
+                const timeWithSeconds = submissionData.closeTime;
+                delete submissionData.closeTime;
+                const timeWithoutSeconds = timeWithSeconds.split(':').slice(0, 2).join(':');
+                submissionData.closeTime = timeWithoutSeconds;
+            }
         }
 
         try {
@@ -113,7 +125,7 @@ const ServiceCenterModal = ({ isOpen, onClose, onSave, initialData }) => {
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
                 <div className="modal-header">
-                    <h3>{initialData ? 'Edit Service Center' : 'Add New Service Center'}</h3>
+                    <h3>{isViewOnly ? 'View Service Center' : (initialData ? 'Edit Service Center' : 'Add New Service Center')}</h3>
                     <button className="close-btn" onClick={onClose}>
                         <X size={20} />
                     </button>
@@ -132,6 +144,7 @@ const ServiceCenterModal = ({ isOpen, onClose, onSave, initialData }) => {
                                     value={formData.name}
                                     onChange={handleChange}
                                     required
+                                    disabled={isViewOnly}
                                 />
                             </div>
 
@@ -145,6 +158,7 @@ const ServiceCenterModal = ({ isOpen, onClose, onSave, initialData }) => {
                                     value={formData.location}
                                     onChange={handleChange}
                                     required
+                                    disabled={isViewOnly}
                                 />
                             </div>
 
@@ -157,6 +171,7 @@ const ServiceCenterModal = ({ isOpen, onClose, onSave, initialData }) => {
                                     placeholder="Contact Number"
                                     value={formData.contact}
                                     onChange={handleChange}
+                                    disabled={isViewOnly}
                                 />
                             </div>
 
@@ -175,6 +190,7 @@ const ServiceCenterModal = ({ isOpen, onClose, onSave, initialData }) => {
                                             onChange={handleChange}
                                             required
                                             style={{ colorScheme: 'dark' }}
+                                            disabled={isViewOnly}
                                         />
                                     </div>
                                 </div>
@@ -189,6 +205,7 @@ const ServiceCenterModal = ({ isOpen, onClose, onSave, initialData }) => {
                                             onChange={handleChange}
                                             required
                                             style={{ colorScheme: 'dark' }}
+                                            disabled={isViewOnly}
                                         />
                                     </div>
                                 </div>
@@ -196,17 +213,19 @@ const ServiceCenterModal = ({ isOpen, onClose, onSave, initialData }) => {
                         </div>
 
                         <div className="modal-footer" style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
-                            <button type="button" className="secondary-btn" onClick={onClose} disabled={isSaving}>Cancel</button>
-                            <button type="submit" className="primary-btn" disabled={isSaving}>
-                                {isSaving ? (
-                                    <>
-                                        <Loader2 className="animate-spin" size={16} />
-                                        {initialData ? 'Updating...' : 'Creating...'}
-                                    </>
-                                ) : (
-                                    initialData ? 'Update Center' : 'Create Center'
-                                )}
-                            </button>
+                            <button type="button" className="secondary-btn" onClick={onClose} disabled={isSaving}>{isViewOnly ? 'Close' : 'Cancel'}</button>
+                            {!isViewOnly && (
+                                <button type="submit" className="primary-btn" disabled={isSaving}>
+                                    {isSaving ? (
+                                        <>
+                                            <Loader2 className="animate-spin" size={16} />
+                                            {initialData ? 'Updating...' : 'Creating...'}
+                                        </>
+                                    ) : (
+                                        initialData ? 'Update Center' : 'Create Center'
+                                    )}
+                                </button>
+                            )}
                         </div>
                     </form>
                 </div>

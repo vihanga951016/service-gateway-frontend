@@ -10,6 +10,8 @@ import UserProfile from './pages/UserProfile';
 import Users from './pages/Users';
 import Roles from './pages/Roles';
 import ServiceCenters from './pages/ServiceCenters';
+import ServiceCenter from './pages/ServiceCenter';
+import Services from './pages/Services';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ThemeProvider } from './context/ThemeContext';
 import './App.css';
@@ -34,6 +36,8 @@ function App() {
             <Route path="users" element={<Users />} />
             <Route path="roles" element={<Roles />} />
             <Route path="service-centers" element={<ServiceCenters />} />
+            <Route path="service-centers/:id" element={<ServiceCenter />} />
+            <Route path="services" element={<Services />} />
             {/* Settings route removed as it uses Modal now */}
           </Route>
         </Routes>

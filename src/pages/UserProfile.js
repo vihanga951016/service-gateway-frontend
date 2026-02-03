@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Mail, Phone, FileText, Shield, MapPin, Edit2, Calendar, User, Camera, X, Save, Lock, Briefcase } from 'lucide-react';
 import '../App.css';
 import axios from 'axios';
@@ -30,8 +30,13 @@ const UserProfile = () => {
     const [roles, setRoles] = useState([]);
     const [isLoadingRoles, setIsLoadingRoles] = useState(false);
 
+    const fetchInitiated = useRef(false);
+
     useEffect(() => {
-        fetchUserProfile();
+        if (!fetchInitiated.current) {
+            fetchUserProfile();
+            fetchInitiated.current = true;
+        }
     }, []);
 
     const fetchUserProfile = async () => {
@@ -206,8 +211,8 @@ const UserProfile = () => {
                     : 0;
 
             const payload = {
-                fName: editFormData.firstName,
-                lName: editFormData.lastName,
+                firstName: editFormData.firstName,
+                lastName: editFormData.lastName,
                 email: editFormData.email,
                 contact: editFormData.contact,
                 nic: editFormData.nic,
@@ -506,7 +511,7 @@ const UserProfile = () => {
                                             style={{ width: '100%', paddingLeft: '2.5rem', height: '100%', border: 'none', color: 'inherit', background: 'transparent', outline: 'none', appearance: 'none', WebkitAppearance: 'none' }}
                                         >
                                             <option value="USER">User</option>
-                                            <option value="ADMIN">Admin</option>
+                                            {/* <option value="ADMIN">Admin</option> */}
                                             <option value="EMPLOYEE">Employee</option>
                                         </select>
                                     </div>
@@ -570,7 +575,7 @@ const UserProfile = () => {
                                     </div>
                                 </div>
                             </div>
-                            <div className="modal-footer" style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+                            <div className="modal-footer" style={{ marginBottom: '1.5rem', marginRight: '1.5rem', marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
                                 <button type="button" className="secondary-btn" onClick={() => setIsEditing(false)}>Cancel</button>
                                 <button type="submit" className="primary-btn">
                                     <Save size={18} />
