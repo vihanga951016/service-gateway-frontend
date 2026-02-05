@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Users, Layout, Briefcase, ChevronLeft, MapPin, Phone, Clock, Mail, Shield, Loader2, UserPlus, Trash2 } from 'lucide-react';
+import { Users, Layout, Briefcase, ChevronLeft, MapPin, Phone, Clock, Mail, Edit2, Loader2, UserPlus, Trash2 } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { getServiceCenterById, getEmployeesByCenterId, removeUserFromCenter, getServicePointsByCenterId } from '../services/serviceProviderService';
+import { getServiceCenterById, getEmployeesByCenterId, removeUserFromCenter, getServicePointsByCenterId, deleteServicePoint } from '../services/serviceProviderService';
 import AssignUserModal from '../components/AssignUserModal';
 import ServicePointModal from '../components/ServicePointModal';
 import AssignServiceToPointModal from '../components/AssignServiceToPointModal';
+import ManagePointServicesModal from '../components/ManagePointServicesModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import '../App.css';
 
@@ -27,6 +28,12 @@ const ServiceCenter = () => {
     const [selectedPoint, setSelectedPoint] = useState(null);
     const [isAssignPointModalOpen, setIsAssignPointModalOpen] = useState(false);
     const [selectedServiceForAssignment, setSelectedServiceForAssignment] = useState(null);
+    const [pointServiceAssignments, setPointServiceAssignments] = useState({});
+    const [isManageServicesModalOpen, setIsManageServicesModalOpen] = useState(false);
+    const [selectedPointForServices, setSelectedPointForServices] = useState(null);
+    const [isDeletePointDialogOpen, setIsDeletePointDialogOpen] = useState(false);
+    const [pointToDelete, setPointToDelete] = useState(null);
+    const [isDeletingPoint, setIsDeletingPoint] = useState(false);
 
     const fetchEmployees = async () => {
         setEmployeesLoading(true);
@@ -105,6 +112,23 @@ const ServiceCenter = () => {
             setIsRemoveDialogOpen(false);
         }
     };
+
+    const handleDeletePoint = async () => {
+        if (!pointToDelete) return;
+        setIsDeletingPoint(true);
+        try {
+            await deleteServicePoint(pointToDelete.id);
+            toast.success('Service point deleted successfully');
+            fetchServicePoints();
+        } catch (error) {
+            toast.error(error.message || 'Failed to delete service point');
+        } finally {
+            setIsDeletingPoint(false);
+            setPointToDelete(null);
+            setIsDeletePointDialogOpen(false);
+        }
+    };
+
 
     const lastFetchId = useRef(null);
     useEffect(() => {
@@ -236,25 +260,6 @@ const ServiceCenter = () => {
                             <Layout size={18} />
                             Service Points
                         </button>
-                        <button
-                            className={`tab-btn ${activeTab === 'services' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('services')}
-                            style={{
-                                padding: '1rem 0',
-                                background: 'none',
-                                border: 'none',
-                                borderBottom: activeTab === 'services' ? '2px solid var(--primary-color)' : '2px solid transparent',
-                                color: activeTab === 'services' ? 'var(--primary-color)' : 'var(--text-secondary)',
-                                fontWeight: activeTab === 'services' ? '600' : '400',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.5rem'
-                            }}
-                        >
-                            <Briefcase size={18} />
-                            Available Services
-                        </button>
                     </div>
 
                     <div className="tab-content">
@@ -371,25 +376,44 @@ const ServiceCenter = () => {
                                                             <Clock size={16} />
                                                             <span>{point.openTime} - {point.closeTime}</span>
                                                         </div>
-                                                        <button
-                                                            className="secondary-btn"
-                                                            style={{
-                                                                marginTop: '1rem',
-                                                                width: '100%',
-                                                                padding: '0.5rem',
-                                                                fontSize: '0.85rem',
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
-                                                                gap: '0.5rem'
-                                                            }}
-                                                            onClick={() => {
-                                                                setSelectedPoint(point);
-                                                                setIsPointModalOpen(true);
-                                                            }}
-                                                        >
-                                                            Edit Details
-                                                        </button>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
+                                                            <Briefcase size={14} style={{ color: 'var(--primary-color)' }} />
+                                                            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                                                                {point.serviceCount} service(s) assigned
+                                                            </span>
+                                                        </div>
+                                                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', justifyContent: 'flex-end' }}>
+                                                            <button
+                                                                className="icon-action-btn text-primary"
+                                                                style={{ color: 'var(--primary-color)' }}
+                                                                onClick={() => {
+                                                                    setSelectedPointForServices(point);
+                                                                    setIsManageServicesModalOpen(true);
+                                                                }}
+                                                            >
+                                                                <Briefcase size={16} />
+                                                            </button>
+                                                            <button
+                                                                className="icon-action-btn"
+                                                                onClick={() => {
+                                                                    setSelectedPoint(point);
+                                                                    setIsPointModalOpen(true);
+                                                                }}
+                                                                title="Edit Details"
+                                                            >
+                                                                <Edit2 size={16} />
+                                                            </button>
+                                                            <button
+                                                                className="icon-action-btn text-danger"
+                                                                onClick={() => {
+                                                                    setPointToDelete(point);
+                                                                    setIsDeletePointDialogOpen(true);
+                                                                }}
+                                                                title="Delete"
+                                                            >
+                                                                <Trash2 size={16} />
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ))
@@ -410,51 +434,6 @@ const ServiceCenter = () => {
                             </div>
                         )}
 
-                        {activeTab === 'services' && (
-                            <div className="table-responsive">
-                                <table className="data-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Service Name</th>
-                                            <th>Service Time</th>
-                                            <th>Price</th>
-                                            <th style={{ textAlign: 'right' }}>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {dummyServices.map(service => (
-                                            <tr key={service.id}>
-                                                <td className="font-medium">{service.name}</td>
-                                                <td>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                        <Clock size={14} className="text-muted" />
-                                                        {service.time}
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <span style={{ fontWeight: '600', color: 'var(--primary-color)' }}>
-                                                        {service.price}
-                                                    </span>
-                                                </td>
-                                                <td style={{ textAlign: 'right' }}>
-                                                    <button
-                                                        className="secondary-btn"
-                                                        style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem', marginLeft: 'auto' }}
-                                                        onClick={() => {
-                                                            setSelectedServiceForAssignment(service);
-                                                            setIsAssignPointModalOpen(true);
-                                                        }}
-                                                    >
-                                                        <Layout size={14} />
-                                                        Assign Point
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>
@@ -474,12 +453,17 @@ const ServiceCenter = () => {
                 initialData={selectedPoint}
             />
 
-            <AssignServiceToPointModal
-                isOpen={isAssignPointModalOpen}
-                onClose={() => setIsAssignPointModalOpen(false)}
-                service={selectedServiceForAssignment}
-                availablePoints={servicePoints}
-                initialSelectedPoints={[]} // This would be fetched if real
+            <ManagePointServicesModal
+                isOpen={isManageServicesModalOpen}
+                onClose={() => setIsManageServicesModalOpen(false)}
+                servicePoint={selectedPointForServices}
+                assignedServices={selectedPointForServices ? (pointServiceAssignments[selectedPointForServices.id] || []) : []}
+                onUpdateServices={(pointId, services) => {
+                    setPointServiceAssignments(prev => ({
+                        ...prev,
+                        [pointId]: services
+                    }));
+                }}
             />
 
             <ConfirmDialog
@@ -494,6 +478,20 @@ const ServiceCenter = () => {
                 title="Remove Employee"
                 message={`Are you sure you want to remove ${employeeToRemove?.userName} from this service center?`}
                 confirmText={isRemoving ? "Removing..." : "Remove"}
+                type="danger"
+            />
+            <ConfirmDialog
+                isOpen={isDeletePointDialogOpen}
+                onClose={() => {
+                    if (!isDeletingPoint) {
+                        setIsDeletePointDialogOpen(false);
+                        setPointToDelete(null);
+                    }
+                }}
+                onConfirm={handleDeletePoint}
+                title="Delete Service Point"
+                message={`Are you sure you want to delete ${pointToDelete?.name}? This action cannot be undone.`}
+                confirmText={isDeletingPoint ? "Deleting..." : "Delete"}
                 type="danger"
             />
         </div>

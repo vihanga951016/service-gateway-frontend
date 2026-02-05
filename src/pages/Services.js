@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import ServiceModal from '../components/ServiceModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import InfoModal from '../components/InfoModal';
-import { getServices, deleteService } from '../services/serviceProviderService';
+import { getServices, deleteService, getAssignedPointsForService, unassignServiceFromPoint } from '../services/serviceProviderService';
 
 const Services = () => {
     const navigate = useNavigate();
@@ -22,6 +22,9 @@ const Services = () => {
     const [serviceToDelete, setServiceToDelete] = useState(null);
     const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
     const [infoModalContent, setInfoModalContent] = useState('');
+    const [isCheckingAssignments, setIsCheckingAssignments] = useState(false);
+    const [assignedPoints, setAssignedPoints] = useState([]);
+    const [unassigningId, setUnassigningId] = useState(null);
 
     const itemsPerPage = 10;
 
@@ -91,9 +94,18 @@ const Services = () => {
         setIsModalOpen(true);
     };
 
-    const handleDeleteClick = (id) => {
-        setServiceToDelete(id);
-        setIsDeleteDialogOpen(true);
+    const handleDeleteClick = async (id, serviceName) => {
+        setServiceToDelete({ id, name: serviceName });
+        setIsCheckingAssignments(true);
+        try {
+            const points = await getAssignedPointsForService(id);
+            setAssignedPoints(points || []);
+            setIsDeleteDialogOpen(true);
+        } catch (error) {
+            toast.error('Failed to check service assignments');
+        } finally {
+            setIsCheckingAssignments(false);
+        }
     };
 
     const handleInfoClick = (description) => {
@@ -101,11 +113,29 @@ const Services = () => {
         setIsInfoModalOpen(true);
     };
 
+    const handleUnassignService = async (pointId) => {
+        if (!serviceToDelete?.id) return;
+
+        setUnassigningId(pointId);
+        try {
+            await unassignServiceFromPoint(serviceToDelete.id, pointId);
+            toast.success('Service unassigned successfully');
+
+            // Refresh assigned points list
+            const points = await getAssignedPointsForService(serviceToDelete.id);
+            setAssignedPoints(points || []);
+        } catch (error) {
+            toast.error(error.message || 'Failed to unassign service');
+        } finally {
+            setUnassigningId(null);
+        }
+    };
+
     const confirmDeleteService = async () => {
         if (!serviceToDelete) return;
 
         try {
-            await deleteService(serviceToDelete);
+            await deleteService(serviceToDelete.id);
             toast.success('Service deleted successfully');
             fetchServices();
         } catch (error) {
@@ -149,13 +179,59 @@ const Services = () => {
                 onClose={() => {
                     setIsDeleteDialogOpen(false);
                     setServiceToDelete(null);
+                    setAssignedPoints([]);
                 }}
                 onConfirm={confirmDeleteService}
-                title="Delete Service"
-                message="Are you sure you want to delete this service? This action cannot be undone."
+                title={assignedPoints.length > 0 ? "Cannot Delete Service" : "Delete Service"}
+                message={assignedPoints.length > 0
+                    ? `This service is currently assigned to ${assignedPoints.length} point(s). Please unassign it before deleting.`
+                    : "Are you sure you want to delete this service? This action cannot be undone."}
                 confirmText="Delete"
-                cancelText="Cancel"
-            />
+                cancelText={assignedPoints.length > 0 ? "Close" : "Cancel"}
+                confirmHidden={assignedPoints.length > 0}
+            >
+                {assignedPoints.length > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1.25rem' }}>
+                        <p style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '4px' }}>
+                            Currently assigned at:
+                        </p>
+                        {assignedPoints.map((assignment, index) => (
+                            <div
+                                key={index}
+                                className="assignment-item"
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    padding: '0.75rem 1rem',
+                                    width: '100%',
+                                    background: 'var(--hover-bg)',
+                                    border: '1px solid var(--border-color)',
+                                    borderRadius: '8px',
+                                }}
+                            >
+                                <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                                    <span style={{ fontWeight: '600', fontSize: '0.9rem' }}>{assignment.pointName}</span>
+                                    <span style={{ fontSize: '0.8rem', opacity: 0.7 }}>{assignment.serviceCenter}</span>
+                                </div>
+                                <button
+                                    className="icon-action-btn text-danger"
+                                    onClick={() => handleUnassignService(assignment.pointId)}
+                                    disabled={unassigningId === assignment.pointId}
+                                    title="Unassign Service"
+                                    style={{ marginLeft: '1rem', padding: '0.5rem' }}
+                                >
+                                    {unassigningId === assignment.pointId ? (
+                                        <Loader2 size={16} className="animate-spin" />
+                                    ) : (
+                                        <Trash2 size={16} />
+                                    )}
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </ConfirmDialog>
 
             <div className="page-header">
                 <div>
@@ -269,7 +345,7 @@ const Services = () => {
                                                     <button className="icon-action-btn" title="Edit" onClick={() => handleEditClick(service)}>
                                                         <Edit2 size={16} />
                                                     </button>
-                                                    <button className="icon-action-btn text-danger" title="Delete" onClick={() => handleDeleteClick(service.id)}>
+                                                    <button className="icon-action-btn text-danger" title="Delete" onClick={() => handleDeleteClick(service.id, service.name)}>
                                                         <Trash2 size={16} />
                                                     </button>
                                                 </div>

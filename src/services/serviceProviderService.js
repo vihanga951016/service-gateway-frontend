@@ -516,32 +516,6 @@ export const getServicePointsByCenterId = async (centerId) => {
     }
 };
 
-export const getNonAssignedServicesToPoint = async (centerId) => {
-    try {
-        const baseUrl = getConfig().baseUrl;
-        const token = localStorage.getItem('token');
-
-        if (!token) {
-            throw new Error('No authentication token found');
-        }
-
-        const response = await axios.get(`${baseUrl}/services/not-assign-to-point/${centerId}`, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-
-        if (response.data && response.data.code === 0) {
-            return response.data.data;
-        } else {
-            throw new Error(response.data.message || 'Failed to fetch service points');
-        }
-    } catch (error) {
-        console.error('Failed to fetch service points:', error);
-        throw error;
-    }
-};
-
 export const addServicePoint = async (pointData) => {
     try {
         const baseUrl = getConfig().baseUrl;
@@ -590,6 +564,225 @@ export const updateServicePoint = async (pointData) => {
         }
     } catch (error) {
         console.error('Failed to update service point:', error);
+        throw error;
+    }
+};
+
+export const deleteServicePoint = async (pointId) => {
+    try {
+        const baseUrl = getConfig().baseUrl;
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await axios.delete(`${baseUrl}/service-points/${pointId}/delete`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (response.data && response.data.code === 0) {
+            return response.data;
+        } else {
+            throw new Error(response.data.message || 'Failed to delete service point');
+        }
+    } catch (error) {
+        console.error('Failed to delete service point:', error);
+        throw error;
+    }
+};
+
+/**
+ * Fetch available points for a service in a center
+ * @param {Object} data - { centerId, serviceId }
+ * @returns {Promise<Array>} List of available points
+ */
+export const getAvailablePoints = async (data) => {
+    try {
+        const baseUrl = getConfig().baseUrl;
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await axios.post(`${baseUrl}/services/available-points`, data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (response.data && response.data.code === 0) {
+            return response.data.data;
+        } else {
+            throw new Error(response.data.message || 'Failed to fetch available points');
+        }
+    } catch (error) {
+        console.error('Failed to fetch available points:', error);
+        throw error;
+    }
+};
+
+/**
+ * Fetch available services for a specific service point
+ * @param {number} pointId - The service point ID
+ * @returns {Promise<Array>} List of available services
+ */
+export const getAvailableServicesForPoint = async (pointId) => {
+    try {
+        const baseUrl = getConfig().baseUrl;
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await axios.get(`${baseUrl}/services/available/point/${pointId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (response.data && response.data.code === 0) {
+            return response.data.data;
+        } else {
+            throw new Error(response.data.message || 'Failed to fetch available services');
+        }
+    } catch (error) {
+        console.error('Failed to fetch available services for point:', error);
+        throw error;
+    }
+};
+
+/**
+ * Fetch assigned services for a specific service point
+ * @param {number} pointId - The service point ID
+ * @returns {Promise<Array>} List of assigned services
+ */
+export const getAssignedServicesForPoint = async (pointId) => {
+    try {
+        const baseUrl = getConfig().baseUrl;
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await axios.get(`${baseUrl}/services/assigned/point/${pointId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (response.data && response.data.code === 0) {
+            return response.data.data;
+        } else {
+            throw new Error(response.data.message || 'Failed to fetch assigned services');
+        }
+    } catch (error) {
+        console.error('Failed to fetch assigned services for point:', error);
+        throw error;
+    }
+};
+
+/**
+ * Assign a service to a service point
+ * @param {number} serviceId - The service ID
+ * @param {number} pointId - The service point ID
+ * @returns {Promise<Object>} Response data
+ */
+export const assignServiceToPoint = async (serviceId, pointId) => {
+    try {
+        const baseUrl = getConfig().baseUrl;
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await axios.post(`${baseUrl}/services/assign-to-point`, {
+            serviceId: parseInt(serviceId),
+            pointId: parseInt(pointId)
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (response.data && response.data.code === 0) {
+            return response.data;
+        } else {
+            throw new Error(response.data.message || 'Failed to assign service to point');
+        }
+    } catch (error) {
+        console.error('Failed to assign service to point:', error);
+        throw error;
+    }
+};
+
+/**
+ * Unassign a service from a service point
+ * @param {number} serviceId - The service ID
+ * @param {number} pointId - The service point ID
+ * @returns {Promise<Object>} Response data
+ */
+export const unassignServiceFromPoint = async (serviceId, pointId) => {
+    try {
+        const baseUrl = getConfig().baseUrl;
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await axios.post(`${baseUrl}/services/remove-from-point`, {
+            serviceId: parseInt(serviceId),
+            pointId: parseInt(pointId)
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (response.data && response.data.code === 0) {
+            return response.data;
+        } else {
+            throw new Error(response.data.message || 'Failed to unassign service from point');
+        }
+    } catch (error) {
+        console.error('Failed to unassign service from point:', error);
+        throw error;
+    }
+};
+/**
+ * Get assigned points for a service
+ * @param {number} serviceId - The service ID
+ * @returns {Promise<Array>} List of assigned points
+ */
+export const getAssignedPointsForService = async (serviceId) => {
+    try {
+        const baseUrl = getConfig().baseUrl;
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await axios.get(`${baseUrl}/services/${serviceId}/assigned-points`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (response.data && response.data.code === 0) {
+            return response.data.data;
+        } else {
+            throw new Error(response.data.message || 'Failed to fetch assigned points');
+        }
+    } catch (error) {
+        console.error('Failed to fetch assigned points:', error);
         throw error;
     }
 };

@@ -1,17 +1,48 @@
 import React, { useState, useEffect } from 'react';
 import { X, Layout, Check, Loader2 } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { getAvailablePoints } from '../services/serviceProviderService';
 import '../App.css';
+import { useNavigate } from 'react-router-dom';
 
-const AssignServiceToPointModal = ({ isOpen, onClose, service, availablePoints, initialSelectedPoints = [] }) => {
+const AssignServiceToPointModal = ({ isOpen, onClose, service, centerId, initialSelectedPoints = [] }) => {
+    const navigate = useNavigate();
     const [selectedPoints, setSelectedPoints] = useState([]);
     const [isSaving, setIsSaving] = useState(false);
+    const [availablePoints, setAvailablePoints] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-        if (isOpen) {
+        if (isOpen && service && centerId) {
             setSelectedPoints(initialSelectedPoints);
+            fetchAvailablePoints();
         }
-    }, [isOpen, initialSelectedPoints]);
+    }, [isOpen, service, centerId, initialSelectedPoints]);
+
+    const fetchAvailablePoints = async () => {
+        setIsLoading(true);
+        try {
+            const data = await getAvailablePoints({
+                centerId: parseInt(centerId),
+                serviceId: service.id
+            });
+            setAvailablePoints(data || []);
+        } catch (error) {
+            if (error?.response?.data?.data) {
+                if (error?.response?.data?.code === 1) {
+                    toast.info("Session expired. Please login again.");
+                    navigate('/login');
+                } else {
+                    toast.error(error?.response?.data?.data);
+                }
+            } else {
+                toast.error('Failed to load service center details');
+            }
+            setAvailablePoints([]);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     if (!isOpen || !service) return null;
 
@@ -56,74 +87,80 @@ const AssignServiceToPointModal = ({ isOpen, onClose, service, availablePoints, 
                         Select the service points where this service will be available.
                     </p>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '300px', overflowY: 'auto', paddingRight: '0.5rem' }}>
-                        {availablePoints.length > 0 ? (
-                            availablePoints.map(point => (
-                                <div
-                                    key={point.id}
-                                    onClick={() => togglePoint(point.id)}
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'space-between',
-                                        padding: '1rem',
-                                        borderRadius: '12px',
-                                        border: `1px solid ${selectedPoints.includes(point.id) ? 'var(--primary-color)' : 'var(--border-color)'}`,
-                                        background: selectedPoints.includes(point.id) ? 'rgba(37, 99, 235, 0.05)' : 'transparent',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s'
-                                    }}
-                                >
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                        <div style={{
-                                            width: '40px',
-                                            height: '40px',
-                                            borderRadius: '10px',
-                                            background: 'var(--hover-bg)',
+                    {isLoading ? (
+                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '3rem' }}>
+                            <Loader2 className="animate-spin text-primary" size={32} />
+                        </div>
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '300px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+                            {availablePoints.length > 0 ? (
+                                availablePoints.map(point => (
+                                    <div
+                                        key={point.id}
+                                        onClick={() => togglePoint(point.id)}
+                                        style={{
                                             display: 'flex',
                                             alignItems: 'center',
-                                            justifyContent: 'center'
+                                            justifyContent: 'space-between',
+                                            padding: '1rem',
+                                            borderRadius: '12px',
+                                            border: `1px solid ${selectedPoints.includes(point.id) ? 'var(--primary-color)' : 'var(--border-color)'}`,
+                                            background: selectedPoints.includes(point.id) ? 'rgba(37, 99, 235, 0.05)' : 'transparent',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                            <div style={{
+                                                width: '40px',
+                                                height: '40px',
+                                                borderRadius: '10px',
+                                                background: 'var(--hover-bg)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                            }}>
+                                                <Layout size={20} className="text-secondary" />
+                                            </div>
+                                            <div>
+                                                <div style={{ fontWeight: '600', fontSize: '0.95rem' }}>{point.name}</div>
+                                                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{point.shortName || 'Standard Point'}</div>
+                                            </div>
+                                        </div>
+                                        <div style={{
+                                            width: '24px',
+                                            height: '24px',
+                                            borderRadius: '50%',
+                                            border: `2px solid ${selectedPoints.includes(point.id) ? 'var(--primary-color)' : 'var(--border-color)'}`,
+                                            background: selectedPoints.includes(point.id) ? 'var(--primary-color)' : 'transparent',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: 'white',
+                                            transition: 'all 0.2s'
                                         }}>
-                                            <Layout size={20} className="text-secondary" />
-                                        </div>
-                                        <div>
-                                            <div style={{ fontWeight: '600', fontSize: '0.95rem' }}>{point.name}</div>
-                                            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{point.shortName || 'Standard Point'}</div>
+                                            {selectedPoints.includes(point.id) && <Check size={14} />}
                                         </div>
                                     </div>
-                                    <div style={{
-                                        width: '24px',
-                                        height: '24px',
-                                        borderRadius: '50%',
-                                        border: `2px solid ${selectedPoints.includes(point.id) ? 'var(--primary-color)' : 'var(--border-color)'}`,
-                                        background: selectedPoints.includes(point.id) ? 'var(--primary-color)' : 'transparent',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        color: 'white',
-                                        transition: 'all 0.2s'
-                                    }}>
-                                        {selectedPoints.includes(point.id) && <Check size={14} />}
-                                    </div>
+                                ))
+                            ) : (
+                                <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
+                                    No service points available. Please add points first.
                                 </div>
-                            ))
-                        ) : (
-                            <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
-                                No service points available. Please add points first.
-                            </div>
-                        )}
-                    </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 <div className="modal-footer" style={{ padding: '1.25rem 1.5rem', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-                    <button type="button" className="secondary-btn" onClick={onClose} disabled={isSaving}>
+                    <button type="button" className="secondary-btn" onClick={onClose} disabled={isSaving || isLoading}>
                         Cancel
                     </button>
                     <button
                         type="button"
                         className="primary-btn"
                         onClick={handleSave}
-                        disabled={isSaving || availablePoints.length === 0}
+                        disabled={isSaving || isLoading || availablePoints.length === 0}
                     >
                         {isSaving ? (
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

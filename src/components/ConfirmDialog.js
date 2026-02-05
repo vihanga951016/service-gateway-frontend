@@ -11,12 +11,14 @@ const ConfirmDialog = ({
     confirmText = 'Confirm',
     cancelText = 'Cancel',
     type = 'danger', // 'danger', 'primary', 'success', 'warning'
-    icon: IconProp
+    icon: IconProp,
+    children,
+    confirmHidden = false
 }) => {
     if (!isOpen) return null;
 
     const handleConfirm = () => {
-        onConfirm();
+        if (onConfirm) onConfirm();
         onClose();
     };
 
@@ -44,7 +46,7 @@ const ConfirmDialog = ({
 
     return (
         <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px' }}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
                 <div className="modal-header">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         {getIcon()}
@@ -55,17 +57,22 @@ const ConfirmDialog = ({
                     </button>
                 </div>
 
-                <div className="modal-body">
-                    <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: '1.6' }}>
-                        {message}
-                    </p>
+                <div className="modal-body" style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+                    {message && (
+                        <p style={{ margin: '0 0 1rem 0', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                            {message}
+                        </p>
+                    )}
+                    {children}
                 </div>
 
-                <div className="modal-footer" style={{ gap: '12px', marginTop: '0', paddingTop: '1rem', marginBottom: '1rem', marginRight: '1rem' }}>
-                    <button className="secondary-btn" onClick={onClose}>{cancelText}</button>
-                    <button className="primary-btn mr-2 ml-2" onClick={handleConfirm} style={getConfirmButtonStyle()}>
-                        {confirmText}
-                    </button>
+                <div className="modal-footer" style={{ gap: '12px', marginTop: '1rem', padding: '1.5rem', borderTop: '1px solid var(--border-color)' }}>
+                    <button className="secondary-btn" style={{ padding: '0.6rem 1.2rem' }} onClick={onClose}>{cancelText}</button>
+                    {!confirmHidden && (
+                        <button className="primary-btn" style={{ ...getConfirmButtonStyle(), padding: '0.6rem 1.2rem' }} onClick={handleConfirm}>
+                            {confirmText}
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

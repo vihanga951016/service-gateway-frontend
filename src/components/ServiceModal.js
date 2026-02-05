@@ -156,7 +156,7 @@ const ServiceModal = ({ isOpen, onClose, onSave, initialData, isViewOnly = false
                                 />
                             </div>
 
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '4px' }}>
+                            {/* <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '4px' }}>
                                 <input
                                     type="checkbox"
                                     name="serviceTimeDepends"
@@ -166,7 +166,7 @@ const ServiceModal = ({ isOpen, onClose, onSave, initialData, isViewOnly = false
                                     disabled={isViewOnly}
                                 />
                                 <label htmlFor="serviceTimeDepends" style={{ margin: 0, cursor: 'pointer' }}>Service Time Depends</label>
-                            </div>
+                            </div> */}
 
                             {!formData.serviceTimeDepends && (
                                 <>
@@ -221,7 +221,7 @@ const ServiceModal = ({ isOpen, onClose, onSave, initialData, isViewOnly = false
                                 </>
                             )}
 
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '4px' }}>
+                            {/* <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '4px' }}>
                                 <input
                                     type="checkbox"
                                     name="totalPriceDepends"
@@ -231,7 +231,7 @@ const ServiceModal = ({ isOpen, onClose, onSave, initialData, isViewOnly = false
                                     disabled={isViewOnly}
                                 />
                                 <label htmlFor="totalPriceDepends" style={{ margin: 0, cursor: 'pointer' }}>Total Price Depends</label>
-                            </div>
+                            </div> */}
 
                             <label style={{ display: 'block', marginBottom: '4px' }}>Prices</label>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
