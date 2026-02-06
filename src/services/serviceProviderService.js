@@ -87,6 +87,38 @@ export const getAllServiceCenters = async () => {
         throw error;
     }
 };
+
+/**
+ * Fetch services for dropdown
+ * @returns {Promise<Array>} List of services
+ */
+export const getServicesDropdown = async () => {
+    try {
+        const baseUrl = getConfig().baseUrl;
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await axios.get(`${baseUrl}/services/dropdown`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (response.data && response.data.code === 0) {
+            return response.data.data;
+        } else {
+            // Fallback for mock/dummy if data is directly in response.data
+            return Array.isArray(response.data) ? response.data : (response.data.data || []);
+        }
+    } catch (error) {
+        console.error('Failed to fetch services dropdown:', error);
+        throw error;
+    }
+};
+
 /**
  * Add a new service center
  * @param {Object} centerData - The center data to add
@@ -783,6 +815,188 @@ export const getAssignedPointsForService = async (serviceId) => {
         }
     } catch (error) {
         console.error('Failed to fetch assigned points:', error);
+        throw error;
+    }
+};
+
+/**
+ * Add a new cluster
+ * @param {Object} clusterData - { id, name, serviceIds }
+ * @returns {Promise<Object>} Response data
+ */
+export const addCluster = async (clusterData) => {
+    try {
+        const baseUrl = getConfig().baseUrl;
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await axios.post(`${baseUrl}/clusters/add`, clusterData, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (response.data && response.data.code === 0) {
+            return response.data.data;
+        } else {
+            throw new Error(response.data.message || 'Failed to add cluster');
+        }
+    } catch (error) {
+        console.error('Failed to add cluster:', error);
+        throw error;
+    }
+};
+
+/**
+ * Fetch all clusters
+ * @returns {Promise<Array>} List of clusters with services
+ */
+export const getClusters = async () => {
+    try {
+        const baseUrl = getConfig().baseUrl;
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await axios.get(`${baseUrl}/clusters/get-all`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (response.data && response.data.code === 0) {
+            return response.data.data;
+        } else {
+            // Handle if data is returned directly as array
+            return Array.isArray(response.data) ? response.data : (response.data.data || []);
+        }
+    } catch (error) {
+        console.error('Failed to fetch clusters:', error);
+        throw error;
+    }
+};
+
+/**
+ * Update an existing cluster
+ * @param {Object} clusterData - { id, name, serviceIds }
+ * @returns {Promise<Object>} Response data
+ */
+export const updateCluster = async (clusterData) => {
+    try {
+        const baseUrl = getConfig().baseUrl;
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await axios.post(`${baseUrl}/clusters/update`, clusterData, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (response.data && response.data.code === 0) {
+            return response.data.data;
+        } else {
+            throw new Error(response.data.message || 'Failed to update cluster');
+        }
+    } catch (error) {
+        console.error('Failed to update cluster:', error);
+        throw error;
+    }
+};
+/**
+ * Delete a cluster
+ * @param {number|string} id - Cluster ID
+ * @returns {Promise<Object>} Response data
+ */
+export const deleteCluster = async (id) => {
+    try {
+        const baseUrl = getConfig().baseUrl;
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await axios.delete(`${baseUrl}/clusters/${id}/delete`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (response.data && response.data.code === 0) {
+            return response.data;
+        } else {
+            throw new Error(response.data.message || 'Failed to delete cluster');
+        }
+    } catch (error) {
+        console.error('Failed to delete cluster:', error);
+        throw error;
+    }
+};
+
+/**
+ * Assign a cluster to a service center
+ * @param {number|string} clusterId - Cluster ID
+ * @param {number|string} centerId - Service center ID
+ * @returns {Promise<Object>} Response data
+ */
+export const assignClusterToCenter = async (clusterId, centerId) => {
+    try {
+        const baseUrl = getConfig().baseUrl;
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await axios.post(`${baseUrl}/clusters/assign-to-center`, {
+            clusterId: parseInt(clusterId),
+            centerId: parseInt(centerId)
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        return response.data;
+    } catch (error) {
+        console.error('Failed to assign cluster:', error);
+        throw error;
+    }
+};
+
+/**
+ * Remove a cluster from a service center
+ * @param {number|string} clusterId - Cluster ID
+ * @param {number|string} centerId - Service center ID
+ * @returns {Promise<Object>} Response data
+ */
+export const removeClusterFromCenter = async (clusterId, centerId) => {
+    try {
+        const baseUrl = getConfig().baseUrl;
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await axios.delete(`${baseUrl}/clusters/${clusterId}/remove-from-center/${centerId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        return response.data;
+    } catch (error) {
+        console.error('Failed to remove cluster:', error);
         throw error;
     }
 };

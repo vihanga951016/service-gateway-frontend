@@ -3,8 +3,10 @@ import { X, Briefcase, Clock, DollarSign, Loader2, Coins } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { addService, updateService } from '../services/serviceProviderService';
 import '../App.css';
+import { useNavigate } from 'react-router-dom';
 
 const ServiceModal = ({ isOpen, onClose, onSave, initialData, isViewOnly = false }) => {
+    const navigate = useNavigate();
     const [isSaving, setIsSaving] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
@@ -112,9 +114,14 @@ const ServiceModal = ({ isOpen, onClose, onSave, initialData, isViewOnly = false
             }
         } catch (error) {
             if (error?.response?.data?.data) {
-                toast.error(error?.response?.data?.data);
+                if (error?.response?.data?.code === 1) {
+                    toast.info("Session expired. Please login again.");
+                    navigate('/login');
+                } else {
+                    toast.error(error?.response?.data?.data);
+                }
             } else {
-                toast.error('An error occurred while saving the service');
+                toast.error('Network error');
             }
         } finally {
             setIsSaving(false);

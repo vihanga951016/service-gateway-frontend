@@ -102,7 +102,16 @@ const Services = () => {
             setAssignedPoints(points || []);
             setIsDeleteDialogOpen(true);
         } catch (error) {
-            toast.error('Failed to check service assignments');
+            if (error?.response?.data?.data) {
+                if (error?.response?.data?.code === 1) {
+                    toast.info("Session expired. Please login again.");
+                    navigate('/login');
+                } else {
+                    toast.error(error?.response?.data?.data);
+                }
+            } else {
+                toast.error('Network error');
+            }
         } finally {
             setIsCheckingAssignments(false);
         }
@@ -125,7 +134,16 @@ const Services = () => {
             const points = await getAssignedPointsForService(serviceToDelete.id);
             setAssignedPoints(points || []);
         } catch (error) {
-            toast.error(error.message || 'Failed to unassign service');
+            if (error?.response?.data?.data) {
+                if (error?.response?.data?.code === 1) {
+                    toast.info("Session expired. Please login again.");
+                    navigate('/login');
+                } else {
+                    toast.error(error?.response?.data?.data);
+                }
+            } else {
+                toast.error('Network error');
+            }
         } finally {
             setUnassigningId(null);
         }

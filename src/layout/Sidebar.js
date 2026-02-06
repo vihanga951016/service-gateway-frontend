@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Shield, MapPin, Briefcase } from 'lucide-react';
+import { LayoutDashboard, Users, Shield, MapPin, Briefcase, ClipboardList, Layers } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { getConfig } from '../config';
@@ -64,6 +64,14 @@ const Sidebar = () => {
                     <span>Dashboard</span>
                 </NavLink>
 
+                <NavLink
+                    to="/jobs"
+                    className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                >
+                    <ClipboardList size={20} />
+                    <span>Jobs</span>
+                </NavLink>
+
                 {hasPermission('User Management') && (
                     <NavLink
                         to="/users"
@@ -94,13 +102,26 @@ const Sidebar = () => {
                     </NavLink>
                 )}
 
-                <NavLink
-                    to="/services"
-                    className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-                >
-                    <Briefcase size={20} />
-                    <span>Services</span>
-                </NavLink>
+                {hasPermission('Services Management') && (
+                    <NavLink
+                        to="/services"
+                        className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                    >
+                        <Briefcase size={20} />
+                        <span>Services</span>
+                    </NavLink>
+                )}
+
+                {hasPermission('Cluster Management') && (
+                    <NavLink
+                        to="/clusters"
+                        className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                    >
+                        <Layers size={20} />
+                        <span>Clusters</span>
+                    </NavLink>
+                )}
+
             </nav>
             {/* Logout moved to Profile Dropdown */}
         </aside>

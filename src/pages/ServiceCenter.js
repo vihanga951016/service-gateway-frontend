@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Users, Layout, Briefcase, ChevronLeft, MapPin, Phone, Clock, Mail, Edit2, Loader2, UserPlus, Trash2 } from 'lucide-react';
+import { Users, Layout, Briefcase, ChevronLeft, MapPin, Phone, Clock, Mail, Edit2, Loader2, UserPlus, Trash2, Layers } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { getServiceCenterById, getEmployeesByCenterId, removeUserFromCenter, getServicePointsByCenterId, deleteServicePoint } from '../services/serviceProviderService';
+import { getServiceCenterById, getEmployeesByCenterId, removeUserFromCenter, getServicePointsByCenterId, deleteServicePoint, getClusters } from '../services/serviceProviderService';
 import AssignUserModal from '../components/AssignUserModal';
+import AssignClusterModal from '../components/AssignClusterModal';
 import ServicePointModal from '../components/ServicePointModal';
 import AssignServiceToPointModal from '../components/AssignServiceToPointModal';
 import ManagePointServicesModal from '../components/ManagePointServicesModal';
@@ -34,6 +35,12 @@ const ServiceCenter = () => {
     const [isDeletePointDialogOpen, setIsDeletePointDialogOpen] = useState(false);
     const [pointToDelete, setPointToDelete] = useState(null);
     const [isDeletingPoint, setIsDeletingPoint] = useState(false);
+    const [clusters, setClusters] = useState([]);
+    const [clustersLoading, setClustersLoading] = useState(false);
+    const [isAssignClusterModalOpen, setIsAssignClusterModalOpen] = useState(false);
+    const [isRemoveClusterDialogOpen, setIsRemoveClusterDialogOpen] = useState(false);
+    const [clusterToRemove, setClusterToRemove] = useState(null);
+    const [isRemovingCluster, setIsRemovingCluster] = useState(false);
 
     const fetchEmployees = async () => {
         setEmployeesLoading(true);
@@ -53,24 +60,48 @@ const ServiceCenter = () => {
             const data = await getServicePointsByCenterId(id);
             setServicePoints(data || []);
         } catch (error) {
-            console.error("Failed to fetch service points:", error);
+            if (error?.response?.data?.data) {
+                if (error?.response?.data?.code === 1) {
+                    toast.info("Session expired. Please login again.");
+                    navigate('/login');
+                } else {
+                    toast.error(error?.response?.data?.data);
+                }
+            } else {
+                toast.error('Network error');
+            }
         } finally {
             setPointsLoading(false);
+        }
+    };
+
+    const fetchClusters = async () => {
+        setClustersLoading(true);
+        try {
+            const data = await getClusters();
+            setClusters(data || []);
+        } catch (error) {
+            console.error("Failed to fetch clusters:", error);
+            toast.error('Failed to load clusters');
+        } finally {
+            setClustersLoading(false);
         }
     };
 
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [centerData, employeesData, pointsData] = await Promise.all([
+            const [centerData, employeesData, pointsData, clustersData] = await Promise.all([
                 getServiceCenterById(id),
                 getEmployeesByCenterId(id),
-                getServicePointsByCenterId(id)
+                getServicePointsByCenterId(id),
+                getClusters()
             ]);
 
             if (centerData) setCenterDetails(centerData);
             if (employeesData) setEmployees(employeesData);
             if (pointsData) setServicePoints(pointsData);
+            if (clustersData) setClusters(clustersData);
         } catch (error) {
             if (error?.response?.data?.data) {
                 if (error?.response?.data?.code === 1) {
@@ -121,12 +152,39 @@ const ServiceCenter = () => {
             toast.success('Service point deleted successfully');
             fetchServicePoints();
         } catch (error) {
-            toast.error(error.message || 'Failed to delete service point');
+            if (error?.response?.data?.data) {
+                if (error?.response?.data?.code === 1) {
+                    toast.info("Session expired. Please login again.");
+                    navigate('/login');
+                } else {
+                    toast.error(error?.response?.data?.data);
+                }
+            } else {
+                toast.error('Network error');
+            }
         } finally {
             setIsDeletingPoint(false);
             setPointToDelete(null);
             setIsDeletePointDialogOpen(false);
         }
+    };
+    const handleRemoveClusterClick = (cluster) => {
+        setClusterToRemove(cluster);
+        setIsRemoveClusterDialogOpen(true);
+    };
+
+    const confirmRemoveCluster = () => {
+        if (!clusterToRemove) return;
+        setIsRemovingCluster(true);
+
+        // Simulate removal
+        setTimeout(() => {
+            setClusters(prev => prev.filter(c => c.id !== clusterToRemove.id));
+            toast.success(`Cluster "${clusterToRemove.name}" removed successfully (Simulated)`);
+            setIsRemovingCluster(false);
+            setClusterToRemove(null);
+            setIsRemoveClusterDialogOpen(false);
+        }, 800);
     };
 
 
@@ -259,6 +317,25 @@ const ServiceCenter = () => {
                         >
                             <Layout size={18} />
                             Service Points
+                        </button>
+                        <button
+                            className={`tab-btn ${activeTab === 'clusters' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('clusters')}
+                            style={{
+                                padding: '1rem 0',
+                                background: 'none',
+                                border: 'none',
+                                borderBottom: activeTab === 'clusters' ? '2px solid var(--primary-color)' : '2px solid transparent',
+                                color: activeTab === 'clusters' ? 'var(--primary-color)' : 'var(--text-secondary)',
+                                fontWeight: activeTab === 'clusters' ? '600' : '400',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem'
+                            }}
+                        >
+                            <Layers size={18} />
+                            Service Clusters
                         </button>
                     </div>
 
@@ -434,6 +511,77 @@ const ServiceCenter = () => {
                             </div>
                         )}
 
+                        {activeTab === 'clusters' && (
+                            <div className="tab-section-content">
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                    <h4 style={{ margin: 0 }}>Active Service Clusters</h4>
+                                    <button
+                                        className="primary-btn"
+                                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                                        onClick={() => setIsAssignClusterModalOpen(true)}
+                                    >
+                                        {/* <Plus size={18} /> */}
+                                        Add Cluster
+                                    </button>
+                                </div>
+
+                                {clustersLoading ? (
+                                    <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
+                                        <Loader2 className="animate-spin text-primary" size={32} />
+                                    </div>
+                                ) : (
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
+                                        {clusters.length > 0 ? (
+                                            clusters.map(cluster => (
+                                                <div key={cluster.id} className="stat-card" style={{ padding: '1.5rem', border: '1px solid var(--border-color)', borderRadius: '16px', position: 'relative' }}>
+                                                    <button
+                                                        className="icon-action-btn text-danger"
+                                                        style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 10 }}
+                                                        onClick={() => handleRemoveClusterClick(cluster)}
+                                                        title="Remove from center"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1rem', paddingRight: '2rem' }}>
+                                                        <div className="icon-box-primary" style={{ background: 'rgba(37, 99, 235, 0.1)', padding: '0.75rem', borderRadius: '12px' }}>
+                                                            <Layers size={24} className="text-primary" />
+                                                        </div>
+                                                        <h4 style={{ margin: '0', fontSize: '1.1rem' }}>{cluster.name}</h4>
+                                                    </div>
+                                                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                                                        {cluster.services?.length || 0} services assigned
+                                                    </p>
+                                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                                                        {cluster.services?.slice(0, 3).map((service, idx) => (
+                                                            <span key={idx} style={{
+                                                                fontSize: '0.7rem',
+                                                                padding: '0.2rem 0.5rem',
+                                                                background: 'var(--hover-bg)',
+                                                                borderRadius: '4px',
+                                                                color: 'var(--text-secondary)'
+                                                            }}>
+                                                                {service.name}
+                                                            </span>
+                                                        ))}
+                                                        {(cluster.services?.length || 0) > 3 && (
+                                                            <span style={{ fontSize: '0.7rem', color: 'var(--primary-color)', fontWeight: '500' }}>
+                                                                +{(cluster.services?.length || 0) - 3} more
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '3rem', background: 'var(--hover-bg)', borderRadius: '12px', border: '1px dashed var(--border-color)' }}>
+                                                <Layers size={40} style={{ color: 'var(--text-secondary)', marginBottom: '1rem', opacity: 0.5 }} />
+                                                <p style={{ margin: 0, color: 'var(--text-secondary)' }}>No clusters found.</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                     </div>
                 </div>
             </div>
@@ -443,6 +591,14 @@ const ServiceCenter = () => {
                 onClose={() => setIsAssignModalOpen(false)}
                 centerId={id}
                 onSave={fetchEmployees}
+            />
+
+            <AssignClusterModal
+                isOpen={isAssignClusterModalOpen}
+                onClose={() => setIsAssignClusterModalOpen(false)}
+                onSave={() => {
+                    // Logic to update local state if needed, or just toast (already in modal)
+                }}
             />
 
             <ServicePointModal
@@ -492,6 +648,21 @@ const ServiceCenter = () => {
                 title="Delete Service Point"
                 message={`Are you sure you want to delete ${pointToDelete?.name}? This action cannot be undone.`}
                 confirmText={isDeletingPoint ? "Deleting..." : "Delete"}
+                type="danger"
+            />
+
+            <ConfirmDialog
+                isOpen={isRemoveClusterDialogOpen}
+                onClose={() => {
+                    if (!isRemovingCluster) {
+                        setIsRemoveClusterDialogOpen(false);
+                        setClusterToRemove(null);
+                    }
+                }}
+                onConfirm={confirmRemoveCluster}
+                title="Remove Cluster"
+                message={`Are you sure you want to remove the cluster "${clusterToRemove?.name}" from this center?`}
+                confirmText={isRemovingCluster ? "Removing..." : "Remove"}
                 type="danger"
             />
         </div>

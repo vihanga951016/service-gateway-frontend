@@ -90,7 +90,16 @@ const ManagePointServicesModal = ({ isOpen, onClose, servicePoint, assignedServi
             setAvailableServices(prev => prev.filter(s => s.id !== service.id));
             toast.success(`${service.name} added to ${servicePoint.name}`);
         } catch (err) {
-            toast.error(err.message || 'Failed to add service');
+            if (error?.response?.data?.data) {
+                if (error?.response?.data?.code === 1) {
+                    toast.info("Session expired. Please login again.");
+                    navigate('/login');
+                } else {
+                    toast.error(error?.response?.data?.data);
+                }
+            } else {
+                toast.error('Network error');
+            }
         } finally {
             setProcessingId(null);
         }
@@ -107,7 +116,16 @@ const ManagePointServicesModal = ({ isOpen, onClose, servicePoint, assignedServi
             setAvailableServices(prev => [...prev, service]);
             toast.success(`${service.name} removed from ${servicePoint.name}`);
         } catch (err) {
-            toast.error(err.message || 'Failed to remove service');
+            if (error?.response?.data?.data) {
+                if (error?.response?.data?.code === 1) {
+                    toast.info("Session expired. Please login again.");
+                    navigate('/login');
+                } else {
+                    toast.error(error?.response?.data?.data);
+                }
+            } else {
+                toast.error('Network error');
+            }
         } finally {
             setProcessingId(null);
         }

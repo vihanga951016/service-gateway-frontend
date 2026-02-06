@@ -12,6 +12,9 @@ import Roles from './pages/Roles';
 import ServiceCenters from './pages/ServiceCenters';
 import ServiceCenter from './pages/ServiceCenter';
 import Services from './pages/Services';
+import Clusters from './pages/Clusters';
+import Jobs from './pages/Jobs';
+import JobDetail from './pages/JobDetail';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ThemeProvider } from './context/ThemeContext';
 import './App.css';
@@ -31,6 +34,8 @@ function App() {
           }>
             <Route index element={<Navigate to="/login" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
+            <Route path="jobs" element={<Jobs />} />
+            <Route path="jobs/:id" element={<JobDetail />} />
             <Route path="user-profile" element={<UserProfile />} />
             <Route path="service-provider-profile" element={<ServiceProviderProfile />} />
             <Route path="users" element={<Users />} />
@@ -38,6 +43,7 @@ function App() {
             <Route path="service-centers" element={<ServiceCenters />} />
             <Route path="service-centers/:id" element={<ServiceCenter />} />
             <Route path="services" element={<Services />} />
+            <Route path="clusters" element={<Clusters />} />
             {/* Settings route removed as it uses Modal now */}
           </Route>
         </Routes>
