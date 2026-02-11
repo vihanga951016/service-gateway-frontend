@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, ClipboardList, Clock, CheckCircle2, AlertCircle, Eye, MoreVertical, Plus, Calendar, Building } from 'lucide-react';
-import { getAllServiceCenters } from '../services/serviceProviderService';
+import { Search, ClipboardList, Clock, CheckCircle2, AlertCircle, Eye, MoreVertical, Plus, Building } from 'lucide-react';
+import { getServiceCenterDropdown } from '../services/serviceProviderService';
 import CreateJobModal from '../components/CreateJobModal';
 import '../App.css';
 import { toast } from 'react-toastify';
@@ -9,7 +9,6 @@ import { toast } from 'react-toastify';
 const Jobs = () => {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedDate, setSelectedDate] = useState('');
     const [selectedCenter, setSelectedCenter] = useState('');
     const [centers, setCenters] = useState([]);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -18,7 +17,7 @@ const Jobs = () => {
     React.useEffect(() => {
         const fetchCenters = async () => {
             try {
-                const data = await getAllServiceCenters();
+                const data = await getServiceCenterDropdown();
                 setCenters(data || []);
             } catch (error) {
                 if (error?.response?.data?.data) {
@@ -146,10 +145,7 @@ const Jobs = () => {
 
         const matchesCenter = selectedCenter === '' || job.centerName === selectedCenter;
 
-        // Simple date match (just checking if the date string starts with the selected date)
-        const matchesDate = selectedDate === '' || job.createdAt.startsWith(selectedDate);
-
-        return matchesSearch && matchesCenter && matchesDate;
+        return matchesSearch && matchesCenter;
     });
 
     return (
@@ -177,16 +173,6 @@ const Jobs = () => {
                                 placeholder="Search by ID, customer, service or center..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="form-control"
-                                style={{ paddingLeft: '40px', width: '100%' }}
-                            />
-                        </div>
-                        <div className="date-filter" style={{ position: 'relative', width: '200px' }}>
-                            <Calendar size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
-                            <input
-                                type="date"
-                                value={selectedDate}
-                                onChange={(e) => setSelectedDate(e.target.value)}
                                 className="form-control"
                                 style={{ paddingLeft: '40px', width: '100%' }}
                             />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Pencil, Search, Plus, Layers, Trash2, Loader2 } from 'lucide-react';
 import ClusterModal from '../components/ClusterModal';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -17,6 +17,7 @@ const Clusters = () => {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [clusterToDelete, setClusterToDelete] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const isInitialMount = useRef(true);
 
     const fetchClusters = async () => {
         try {
@@ -45,7 +46,10 @@ const Clusters = () => {
     };
 
     useEffect(() => {
-        fetchClusters();
+        if (isInitialMount.current) {
+            fetchClusters();
+            isInitialMount.current = false;
+        }
     }, []);
 
     const handleClusterSaved = () => {

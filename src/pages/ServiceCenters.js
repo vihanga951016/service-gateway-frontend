@@ -28,6 +28,10 @@ const ServiceCenters = () => {
             // API expects 0-indexed page
             const data = await getServiceCenters(currentPage - 1, itemsPerPage, searchQuery);
             if (data) {
+                if (data.totalElements === 1 && data.content && data.content.length > 0) {
+                    navigate(`/service-centers/${data.content[0].id}`, { replace: true });
+                    return;
+                }
                 setCenters(data.content || []);
                 setTotalPages(data.totalPages || 0);
                 setTotalItems(data.totalElements || 0);

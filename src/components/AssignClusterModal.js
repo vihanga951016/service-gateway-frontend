@@ -1,31 +1,40 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Search, Layers, ChevronDown, ChevronUp, Check, Loader2 } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { getNonAssignedClusters, assignClusterToCenter } from '../services/serviceProviderService';
 import '../App.css';
 
-const AssignClusterModal = ({ isOpen, onClose, onSave }) => {
+const AssignClusterModal = ({ isOpen, onClose, onSave, centerId }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [selectedClusters, setSelectedClusters] = useState([]);
     const [assigning, setAssigning] = useState(false);
+    const [clusters, setClusters] = useState([]);
+    const [loading, setLoading] = useState(false);
     const dropdownRef = useRef(null);
 
-    // Dummy Data
-    const dummyClusters = [
-        { id: 101, name: "Colombo West Cluster", serviceCount: 12 },
-        { id: 102, name: "Gampaha North Cluster", serviceCount: 8 },
-        { id: 103, name: "Kandy Central Cluster", serviceCount: 15 },
-        { id: 104, name: "Galle Southern Cluster", serviceCount: 10 },
-        { id: 105, name: "Jaffna Northern Cluster", serviceCount: 6 }
-    ];
-
     useEffect(() => {
-        if (!isOpen) {
+        if (isOpen && centerId) {
+            fetchNonAssignedClusters();
+        } else if (!isOpen) {
             setSearchTerm('');
             setIsDropdownOpen(false);
             setSelectedClusters([]);
         }
-    }, [isOpen]);
+    }, [isOpen, centerId]);
+
+    const fetchNonAssignedClusters = async () => {
+        setLoading(true);
+        try {
+            const data = await getNonAssignedClusters(centerId);
+            setClusters(data || []);
+        } catch (error) {
+            console.error('Failed to fetch non-assigned clusters:', error);
+            toast.error('Failed to load available clusters');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -37,24 +46,30 @@ const AssignClusterModal = ({ isOpen, onClose, onSave }) => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const handleAssign = () => {
+    const handleAssign = async () => {
         if (selectedClusters.length === 0) {
             toast.error('Please select at least one cluster');
             return;
         }
 
         setAssigning(true);
-        // Simulate API call
-        setTimeout(() => {
-            const clusterNames = selectedClusters.map(c => c.name).join(', ');
-            toast.success(`${selectedClusters.length} clusters added successfully: ${clusterNames} (Simulated)`);
-            setAssigning(false);
+        try {
+            // Bulk assign selected clusters
+            const clusterIds = selectedClusters.map(c => c.id);
+            await assignClusterToCenter(clusterIds, centerId);
+
+            toast.success(`${selectedClusters.length} cluster${selectedClusters.length > 1 ? 's' : ''} added successfully`);
             onSave();
             onClose();
-        }, 1200);
+        } catch (error) {
+            console.error('Failed to assign clusters:', error);
+            toast.error(error.message || 'Failed to assign clusters');
+        } finally {
+            setAssigning(false);
+        }
     };
 
-    const filteredClusters = dummyClusters.filter(cluster =>
+    const filteredClusters = clusters.filter(cluster =>
         cluster.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -90,7 +105,7 @@ const AssignClusterModal = ({ isOpen, onClose, onSave }) => {
 
                 <div className="modal-body">
                     <p style={{ marginBottom: '1.25rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                        Search and select one or more regional service clusters to add.
+                        Search and select one or more regional service clusters to add to this center.
                     </p>
 
                     <div className="form-group" style={{ marginBottom: '1.5rem' }}>
@@ -105,7 +120,11 @@ const AssignClusterModal = ({ isOpen, onClose, onSave }) => {
                                     padding: '8px 12px'
                                 }}
                             >
-                                <Search size={18} className="search-icon" />
+                                {loading ? (
+                                    <Loader2 size={18} className="animate-spin text-muted" />
+                                ) : (
+                                    <Search size={18} className="search-icon" />
+                                )}
                                 <input
                                     type="text"
                                     placeholder={selectedClusters.length > 0 ? "" : "Search clusters..."}
@@ -117,6 +136,7 @@ const AssignClusterModal = ({ isOpen, onClose, onSave }) => {
                                     }}
                                     onFocus={() => setIsDropdownOpen(true)}
                                     onClick={(e) => e.stopPropagation()}
+                                    disabled={loading}
                                 />
                                 <button
                                     className="dropdown-toggle-btn"
@@ -125,6 +145,7 @@ const AssignClusterModal = ({ isOpen, onClose, onSave }) => {
                                         setIsDropdownOpen(!isDropdownOpen);
                                     }}
                                     type="button"
+                                    disabled={loading}
                                 >
                                     {isDropdownOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                                 </button>
@@ -132,7 +153,9 @@ const AssignClusterModal = ({ isOpen, onClose, onSave }) => {
 
                             {isDropdownOpen && (
                                 <div className="dropdown-options-list" style={{ maxHeight: '250px' }}>
-                                    {filteredClusters.length > 0 ? (
+                                    {loading ? (
+                                        <div className="no-options">Loading clusters...</div>
+                                    ) : filteredClusters.length > 0 ? (
                                         filteredClusters.map(cluster => {
                                             const isSelected = selectedClusters.some(c => c.id === cluster.id);
                                             return (
@@ -158,9 +181,6 @@ const AssignClusterModal = ({ isOpen, onClose, onSave }) => {
                                                         </div>
                                                         <div>
                                                             <div style={{ fontWeight: '500', fontSize: '0.95rem' }}>{cluster.name}</div>
-                                                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                                                                {cluster.serviceCount} services
-                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -224,7 +244,7 @@ const AssignClusterModal = ({ isOpen, onClose, onSave }) => {
                     )}
                 </div>
 
-                <div className="modal-footer" style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem', marginTop: '1rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+                <div className="modal-footer" style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem', marginTop: '1rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginBottom: '1.0rem', marginRight: '1.0rem'}}>
                     <button type="button" className="secondary-btn" onClick={onClose} disabled={assigning}>Cancel</button>
                     <button
                         type="button"
