@@ -1279,3 +1279,34 @@ export const checkServicesAssignToPoint = async (centerClusterId) => {
         return [];
     }
 };
+
+/**
+ * Fetch services provided by a specific center
+ * @param {number|string} id - Service center ID
+ * @returns {Promise<Array>} List of providing services
+ */
+export const getProvidingServicesByCenterId = async (id) => {
+    try {
+        const baseUrl = getConfig().baseUrl;
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await axios.get(`${baseUrl}/service-center/${id}/get-providing-services`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (response.data && response.data.code === 0) {
+            return response.data.data;
+        } else {
+            return Array.isArray(response.data.data) ? response.data.data : (Array.isArray(response.data) ? response.data : []);
+        }
+    } catch (error) {
+        console.error('Failed to fetch providing services:', error);
+        throw error;
+    }
+};

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Search, ClipboardList, Clock, CheckCircle2, AlertCircle, Eye, MoreVertical, Plus, Building } from 'lucide-react';
 import { getServiceCenterDropdown } from '../services/serviceProviderService';
 import CreateJobModal from '../components/CreateJobModal';
@@ -114,6 +114,13 @@ const Jobs = () => {
         setJobsList(dummyJobs);
     }, []);
 
+    const servicePoints = [
+        { id: 'sp1', name: 'Counter 01', type: 'Physical Counter' },
+        { id: 'sp2', name: 'Counter 02', type: 'Physical Counter' },
+        { id: 'sp3', name: 'Counter 03', type: 'Physical Counter' },
+        { id: 'sp4', name: 'Self-Service Kiosk', type: 'Digital Kiosk' },
+    ];
+
     const handleJobCreated = (newJob) => {
         setJobsList([newJob, ...jobsList]);
     };
@@ -130,10 +137,10 @@ const Jobs = () => {
 
     const getStatusIcon = (status) => {
         switch (status) {
-            case 'Completed': return <CheckCircle2 size={14} />;
-            case 'In Progress': return <Clock size={14} />;
-            case 'Pending': return <AlertCircle size={14} />;
-            case 'Cancelled': return <AlertCircle size={14} />;
+            case 'Completed': return <CheckCircle2 size={12} />;
+            case 'In Progress': return <Clock size={12} />;
+            case 'Pending': return <AlertCircle size={12} />;
+            case 'Cancelled': return <AlertCircle size={12} />;
             default: return null;
         }
     };
@@ -147,6 +154,13 @@ const Jobs = () => {
 
         return matchesSearch && matchesCenter;
     });
+
+    const location = useLocation();
+    const selectedJobId = location.state?.selectedJobId;
+
+    const getJobsForPoint = (pointName) => {
+        return filteredJobs.filter(job => job.pointName === pointName);
+    };
 
     return (
         <div className="page-container">
@@ -170,7 +184,7 @@ const Jobs = () => {
                             <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
                             <input
                                 type="text"
-                                placeholder="Search by ID, customer, service or center..."
+                                placeholder="Search by ID, customer, service..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="form-control"
@@ -194,87 +208,51 @@ const Jobs = () => {
                     </div>
                 </div>
 
-                <div className="table-responsive">
-                    <table className="data-table">
-                        <thead>
-                            <tr>
-                                <th>Job ID</th>
-                                <th>Customer</th>
-                                <th>Service</th>
-                                <th>Location</th>
-                                <th>Total Amount</th>
-                                <th>Paid Amount</th>
-                                <th>Est. Time</th>
-                                <th>Status</th>
-                                <th style={{ textAlign: 'right' }}>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredJobs.length > 0 ? (
-                                filteredJobs.map(job => (
-                                    <tr key={job.id}>
-                                        <td className="font-medium" style={{ color: 'var(--primary-color)' }}>{job.id}</td>
-                                        <td>{job.customerName}</td>
-                                        <td>
-                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                <span style={{ fontWeight: '500' }}>{job.serviceName}</span>
-                                                <small style={{ color: 'var(--text-secondary)' }}>{job.pointName}</small>
+                <div className="kanban-board">
+                    {servicePoints.map(point => {
+                        const pointJobs = getJobsForPoint(point.name);
+                        return (
+                            <div key={point.id} className="kanban-column">
+                                <div className="kanban-column-header">
+                                    <div className="kanban-column-title">
+                                        <Building size={16} className="kanban-column-icon" />
+                                        <span>{point.name}</span>
+                                    </div>
+                                    <span className="kanban-column-count">{pointJobs.length}</span>
+                                </div>
+                                <div className="kanban-cards-container">
+                                    {pointJobs.length > 0 ? (
+                                        pointJobs.map(job => (
+                                            <div
+                                                key={job.id}
+                                                className={`kanban-card ${selectedJobId === job.id ? 'selected' : ''}`}
+                                                onClick={() => navigate(`/jobs/${job.id}`)}
+                                            >
+                                                <span className="kanban-card-id">{job.id}</span>
+                                                <span className="kanban-card-customer">{job.customerName}</span>
+                                                <span className="kanban-card-service">{job.serviceName}</span>
+                                                <div className="kanban-card-footer">
+                                                    <div className="kanban-card-time">
+                                                        <Clock size={14} />
+                                                        <span>{job.serviceTime}</span>
+                                                    </div>
+                                                    <div className="kanban-card-status" style={getStatusStyle(job.status)}>
+                                                        {getStatusIcon(job.status)}
+                                                        <span>{job.status}</span>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </td>
-                                        <td>
-                                            <small style={{ color: 'var(--text-secondary)', display: 'block' }}>{job.centerName}</small>
-                                        </td>
-                                        <td className="font-medium text-right">{job.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                        <td className="font-medium text-right" style={{ color: 'rgb(16, 185, 129)' }}>
-                                            {job.paidAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                        </td>
-                                        <td>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                <Clock size={12} className="text-muted" />
-                                                {job.serviceTime}
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span style={{
-                                                display: 'inline-flex',
-                                                alignItems: 'center',
-                                                gap: '6px',
-                                                padding: '0.25rem 0.75rem',
-                                                borderRadius: '20px',
-                                                fontSize: '0.75rem',
-                                                fontWeight: '600',
-                                                ...getStatusStyle(job.status)
-                                            }}>
-                                                {getStatusIcon(job.status)}
-                                                {job.status}
-                                            </span>
-                                        </td>
-
-                                        <td>
-                                            <div className="action-buttons justify-end">
-                                                <button
-                                                    className="icon-action-btn text-primary"
-                                                    title="View Details"
-                                                    onClick={() => navigate(`/jobs/${job.id}`)}
-                                                >
-                                                    <Eye size={16} />
-                                                </button>
-                                                <button className="icon-action-btn" title="More">
-                                                    <MoreVertical size={16} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="7" className="text-center" style={{ padding: '3rem', color: 'var(--text-secondary)' }}>
-                                        No jobs found matching your search.
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+                                        ))
+                                    ) : (
+                                        <div className="empty-kanban">
+                                            <ClipboardList size={24} opacity={0.5} />
+                                            <span>No active jobs</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 

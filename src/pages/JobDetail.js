@@ -102,7 +102,7 @@ const JobDetail = () => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <button
                         className="icon-action-btn"
-                        onClick={() => navigate('/jobs')}
+                        onClick={() => navigate('/jobs', { state: { selectedJobId: id } })}
                         style={{ background: 'var(--hover-bg)' }}
                     >
                         <ChevronLeft size={20} />
