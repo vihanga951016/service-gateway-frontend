@@ -15,7 +15,6 @@ const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
         centerClusterId: '',
         pointName: '',
         appointmentDate: '',
-        appointmentTime: '',
         appointmentMethod: 'Walk-in',
         description: ''
     });
@@ -134,7 +133,6 @@ const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
                 servicesIds: [], // As per user instruction, do not use for now
                 serviceCenterId: formData.centerId,
                 appointmentDate: formData.appointmentDate,
-                appointmentTime: formData.appointmentTime,
                 notes: formData.description
             };
 
@@ -166,7 +164,6 @@ const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
                 servicesIds: [],
                 serviceCenterId: formData.centerId,
                 appointmentDate: formData.appointmentDate,
-                appointmentTime: formData.appointmentTime,
                 notes: formData.description
             };
 
@@ -186,7 +183,6 @@ const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
                 centerClusterId: '',
                 pointName: '',
                 appointmentDate: '',
-                appointmentTime: '',
                 appointmentMethod: 'Walk-in',
                 description: ''
             });
@@ -228,7 +224,7 @@ const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
     const handleBack = async () => {
         const success = await handleCleanup();
         console.log("success: ", success);
-        
+
         if (success) {
             setShowTimeline(false);
         }
@@ -579,24 +575,12 @@ const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
                                     <h5 style={{ marginBottom: '1rem', color: 'var(--primary-color)', fontSize: '0.9rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Schedule</h5>
                                 </div>
 
-                                <div className="form-group">
+                                <div className="form-group" style={{ gridColumn: 'span 2' }}>
                                     <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}><Calendar size={14} /> Appointment Date</label>
                                     <input
                                         type="date"
                                         name="appointmentDate"
                                         value={formData.appointmentDate}
-                                        onChange={handleChange}
-                                        required
-                                        className="form-control"
-                                    />
-                                </div>
-
-                                <div className="form-group">
-                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}><Clock size={14} /> Appointment Time</label>
-                                    <input
-                                        type="time"
-                                        name="appointmentTime"
-                                        value={formData.appointmentTime}
                                         onChange={handleChange}
                                         required
                                         className="form-control"
