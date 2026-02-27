@@ -119,7 +119,6 @@ const ServicePointModal = ({ isOpen, onClose, onSave, centerId, initialData }) =
                                 onChange={handleChange}
                                 placeholder="e.g. Body Wash"
                                 className="form-control"
-                                required
                             />
                         </div>
 

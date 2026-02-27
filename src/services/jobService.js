@@ -93,3 +93,38 @@ export const removeJobAndCustomer = async (jobId, customerId) => {
         throw error;
     }
 };
+
+/**
+ * Get job schedule for a specific service center and date
+ * @param {number} serviceCenter - Service center ID
+ * @param {string} date - Date in YYYY-MM-DD format
+ * @returns {Promise<Array>} List of scheduled jobs
+ */
+export const getJobSchedule = async (serviceCenter, date) => {
+    try {
+        const baseUrl = getConfig().baseUrl;
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await axios.post(`${baseUrl}/jobs/schedule`, {
+            serviceCenter,
+            date
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (response.data && response.data.code === 0) {
+            return response.data.data;
+        } else {
+            throw new Error(response.data.message || 'Failed to fetch job schedule');
+        }
+    } catch (error) {
+        console.error('Failed to fetch job schedule:', error);
+        throw error;
+    }
+};

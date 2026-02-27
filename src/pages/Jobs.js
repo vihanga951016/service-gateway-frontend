@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, ClipboardList, Clock, CheckCircle2, AlertCircle, Eye, MoreVertical, Plus, Building } from 'lucide-react';
-import { getServiceCenterDropdown } from '../services/serviceProviderService';
+import { Search, ClipboardList, Clock, CheckCircle2, AlertCircle, Eye, MoreVertical, Plus, Building, Calendar } from 'lucide-react';
+import { getServiceCenterDropdown, getServicePointsByCenterId } from '../services/serviceProviderService';
+import { getJobSchedule } from '../services/jobService';
 import CreateJobModal from '../components/CreateJobModal';
 import '../App.css';
 import { toast } from 'react-toastify';
@@ -9,16 +10,23 @@ import { toast } from 'react-toastify';
 const Jobs = () => {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedCenter, setSelectedCenter] = useState('');
+    const [selectedCenter, setSelectedCenter] = useState(''); // Stores center ID
+    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
     const [centers, setCenters] = useState([]);
+    const [servicePoints, setServicePoints] = useState([]);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [jobsList, setJobsList] = useState([]);
+    const [isLoadingPoints, setIsLoadingPoints] = useState(false);
+    const [isLoadingJobs, setIsLoadingJobs] = useState(false);
 
     React.useEffect(() => {
         const fetchCenters = async () => {
             try {
                 const data = await getServiceCenterDropdown();
                 setCenters(data || []);
+                if (data && data.length > 0) {
+                    setSelectedCenter(data[0].id.toString());
+                }
             } catch (error) {
                 if (error?.response?.data?.data) {
                     if (error?.response?.data?.code === 1) {
@@ -35,91 +43,48 @@ const Jobs = () => {
         fetchCenters();
     }, []);
 
-    const dummyJobs = [
-        {
-            id: "JOB-001",
-            customerName: "John Doe",
-            serviceName: "Standard Repair",
-            pointName: "Counter 01",
-            centerName: "Colombo Main Center",
-            status: "In Progress",
-            totalAmount: 4500.00,
-            paidAmount: 2000.00,
-            serviceTime: "45 mins",
-            createdAt: "2026-02-05 10:30 AM"
-        },
-        {
-            id: "JOB-002",
-            customerName: "Alice Smith",
-            serviceName: "Premium Inspection",
-            pointName: "Counter 02",
-            centerName: "Colombo Main Center",
-            status: "Completed",
-            totalAmount: 12500.00,
-            paidAmount: 12500.00,
-            serviceTime: "1h 30m",
-            createdAt: "2026-02-05 09:15 AM"
-        },
-        {
-            id: "JOB-003",
-            customerName: "Bob Wilson",
-            serviceName: "Oil Change",
-            pointName: "Counter 03",
-            centerName: "Kandy Branch",
-            status: "Pending",
-            totalAmount: 8500.00,
-            paidAmount: 0.00,
-            serviceTime: "30 mins",
-            createdAt: "2026-02-05 11:00 AM"
-        },
-        {
-            id: "JOB-004",
-            customerName: "Emma Davis",
-            serviceName: "Full Diagnostics",
-            pointName: "Self-Service Kiosk",
-            centerName: "Galle Center",
-            status: "In Progress",
-            totalAmount: 15000.00,
-            paidAmount: 5000.00,
-            serviceTime: "2h 15m",
-            createdAt: "2026-02-05 10:45 AM"
-        },
-        {
-            id: "JOB-005",
-            customerName: "Michael Brown",
-            serviceName: "Wheel Alignment",
-            pointName: "Counter 01",
-            centerName: "Colombo Main Center",
-            status: "Cancelled",
-            totalAmount: 4500.00,
-            paidAmount: 0.00,
-            serviceTime: "40 mins",
-            createdAt: "2026-02-04 04:30 PM"
-        },
-        {
-            id: "JOB-006",
-            customerName: "Michael Brown",
-            serviceName: "Wheel Alignment",
-            pointName: "Counter 01",
-            centerName: "Colombo Main Center",
-            status: "Cancelled",
-            totalAmount: 4500.00,
-            paidAmount: 0.00,
-            serviceTime: "40 mins",
-            createdAt: "2026-02-04 04:30 PM"
+    const fetchJobSchedule = async () => {
+        if (!selectedCenter || !selectedDate) {
+            setJobsList([]);
+            return;
         }
-    ];
+        setIsLoadingJobs(true);
+        try {
+            const data = await getJobSchedule(parseInt(selectedCenter), selectedDate);
+            setJobsList(data || []);
+        } catch (error) {
+            console.error('Failed to fetch job schedule:', error);
+            // toast.error('Failed to load jobs');
+        } finally {
+            setIsLoadingJobs(false);
+        }
+    };
 
     React.useEffect(() => {
-        setJobsList(dummyJobs);
-    }, []);
+        const fetchServicePoints = async () => {
+            if (!selectedCenter) {
+                setServicePoints([]);
+                return;
+            }
+            setIsLoadingPoints(true);
+            try {
+                const data = await getServicePointsByCenterId(selectedCenter);
+                setServicePoints(data || []);
+            } catch (error) {
+                console.error('Failed to fetch service points:', error);
+                toast.error('Failed to load service points');
+            } finally {
+                setIsLoadingPoints(false);
+            }
+        };
+        fetchServicePoints();
+    }, [selectedCenter]);
 
-    const servicePoints = [
-        { id: 'sp1', name: 'Counter 01', type: 'Physical Counter' },
-        { id: 'sp2', name: 'Counter 02', type: 'Physical Counter' },
-        { id: 'sp3', name: 'Counter 03', type: 'Physical Counter' },
-        { id: 'sp4', name: 'Self-Service Kiosk', type: 'Digital Kiosk' },
-    ];
+    React.useEffect(() => {
+        fetchJobSchedule();
+    }, [selectedCenter, selectedDate]);
+
+
 
     const handleJobCreated = (newJob) => {
         setJobsList([newJob, ...jobsList]);
@@ -136,30 +101,63 @@ const Jobs = () => {
     };
 
     const getStatusIcon = (status) => {
-        switch (status) {
-            case 'Completed': return <CheckCircle2 size={12} />;
-            case 'In Progress': return <Clock size={12} />;
-            case 'Pending': return <AlertCircle size={12} />;
-            case 'Cancelled': return <AlertCircle size={12} />;
+        switch (status?.toLowerCase()) {
+            case 'completed': return <CheckCircle2 size={12} />;
+            case 'serving': return <Clock size={12} />;
+            case 'pending': return <AlertCircle size={12} />;
             default: return null;
         }
     };
 
     const filteredJobs = jobsList.filter(job => {
-        const matchesSearch = job.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            job.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            job.serviceName.toLowerCase().includes(searchQuery.toLowerCase());
+        if (job.freeSlot) return true;
 
-        const matchesCenter = selectedCenter === '' || job.centerName === selectedCenter;
+        const matchesSearch = (job.id?.toString() || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (job.customerName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (job.serviceName || '').toLowerCase().includes(searchQuery.toLowerCase());
 
-        return matchesSearch && matchesCenter;
+        return matchesSearch;
     });
 
     const location = useLocation();
     const selectedJobId = location.state?.selectedJobId;
 
     const getJobsForPoint = (pointName) => {
-        return filteredJobs.filter(job => job.pointName === pointName);
+        const pointJobs = filteredJobs.filter(job => job.pointName === pointName);
+        if (pointJobs.length === 0) return [];
+
+        const grouped = [];
+        let currentGroup = null;
+
+        pointJobs.forEach(job => {
+            if (job.freeSlot) {
+                if (currentGroup) {
+                    grouped.push(currentGroup);
+                    currentGroup = null;
+                }
+                grouped.push(job);
+            } else {
+                if (currentGroup && currentGroup.jobId === job.jobId) {
+                    // Merge with current group
+                    currentGroup.totalTime += job.totalTime;
+                    // Combine time ranges (assuming they are sequential)
+                    const [currentStart] = currentGroup.fromTo.split(' - ');
+                    const [, nextEnd] = job.fromTo.split(' - ');
+                    currentGroup.fromTo = `${currentStart} - ${nextEnd}`;
+                } else {
+                    if (currentGroup) {
+                        grouped.push(currentGroup);
+                    }
+                    currentGroup = { ...job };
+                }
+            }
+        });
+
+        if (currentGroup) {
+            grouped.push(currentGroup);
+        }
+
+        return grouped;
     };
 
     return (
@@ -199,60 +197,82 @@ const Jobs = () => {
                                 className="form-control"
                                 style={{ paddingLeft: '40px', width: '100%', appearance: 'none', background: 'transparent' }}
                             >
-                                <option value="">All Service Centers</option>
+                                {/* <option value="">All Service Centers</option> */}
                                 {centers.map(center => (
-                                    <option key={center.id} value={center.name}>{center.name}</option>
+                                    <option key={center.id} value={center.id}>{center.name}</option>
                                 ))}
                             </select>
+                        </div>
+                        <div className="date-filter" style={{ position: 'relative', width: '200px' }}>
+                            <Calendar size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', pointerEvents: 'none' }} />
+                            <input
+                                type="date"
+                                value={selectedDate}
+                                onChange={(e) => setSelectedDate(e.target.value)}
+                                className="form-control"
+                                style={{ paddingLeft: '40px', width: '100%' }}
+                            />
                         </div>
                     </div>
                 </div>
 
                 <div className="kanban-board">
-                    {servicePoints.map(point => {
-                        const pointJobs = getJobsForPoint(point.name);
-                        return (
-                            <div key={point.id} className="kanban-column">
-                                <div className="kanban-column-header">
-                                    <div className="kanban-column-title">
-                                        <Building size={16} className="kanban-column-icon" />
-                                        <span>{point.name}</span>
-                                    </div>
-                                    <span className="kanban-column-count">{pointJobs.length}</span>
-                                </div>
-                                <div className="kanban-cards-container">
-                                    {pointJobs.length > 0 ? (
-                                        pointJobs.map(job => (
-                                            <div
-                                                key={job.id}
-                                                className={`kanban-card ${selectedJobId === job.id ? 'selected' : ''}`}
-                                                onClick={() => navigate(`/jobs/${job.id}`)}
-                                            >
-                                                <span className="kanban-card-id">{job.id}</span>
-                                                <span className="kanban-card-customer">{job.customerName}</span>
-                                                <span className="kanban-card-service">{job.serviceName}</span>
-                                                <div className="kanban-card-footer">
-                                                    <div className="kanban-card-time">
-                                                        <Clock size={14} />
-                                                        <span>{job.serviceTime}</span>
-                                                    </div>
-                                                    <div className="kanban-card-status" style={getStatusStyle(job.status)}>
-                                                        {getStatusIcon(job.status)}
-                                                        <span>{job.status}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <div className="empty-kanban">
-                                            <ClipboardList size={24} opacity={0.5} />
-                                            <span>No active jobs</span>
+                    {isLoadingPoints || isLoadingJobs ? (
+                        <div style={{ display: 'flex', justifyContent: 'center', width: '100%', padding: '3rem' }}>
+                            <div className="spinner"></div>
+                        </div>
+                    ) : servicePoints.length > 0 ? (
+                        servicePoints.map(point => {
+                            const pointJobs = getJobsForPoint(point.name);
+                            return (
+                                <div key={point.id} className="kanban-column">
+                                    <div className="kanban-column-header">
+                                        <div className="kanban-column-title">
+                                            <Building size={16} className="kanban-column-icon" />
+                                            <span>{point.name}</span>
                                         </div>
-                                    )}
+                                        <span className="kanban-column-count">{pointJobs.length}</span>
+                                    </div>
+                                    <div className="kanban-cards-container">
+                                        {pointJobs.length > 0 ? (
+                                            pointJobs.map(job => (
+                                                job.freeSlot ? (
+                                                    <div
+                                                        key={`free-${job.fromTo}-${point.id}`}
+                                                        className={`kanban-card kanban-card-free`}
+                                                        style={{ height: job.totalTime <= 5 ? '6%' : `${job.totalTime}%` }}
+                                                    >
+                                                        <span className="kanban-card-service">{job.fromTo}</span>
+                                                    </div>
+                                                ) : (
+                                                    <div
+                                                        key={job.id}
+                                                        className={`kanban-card kanban-card-${job.status.toLowerCase()} ${selectedJobId === job.id ? 'selected' : ''}`}
+                                                        onClick={() => navigate(`/jobs/${job.id}`)}
+                                                        style={{ height: job.totalTime <= 13 ? '13%' : `${job.totalTime}%` }}
+                                                    >
+                                                        <span className={`kanban-card-id-${job.status.toLowerCase()}`}>{getStatusIcon(job.status)} JOB - {job.jobId}</span>
+                                                        <span className="kanban-card-customer">{job.customerName}</span>
+                                                        <span className="kanban-card-service">{job.fromTo}</span>
+                                                    </div>
+                                                )
+                                            ))
+                                        ) : (
+                                            <div className="empty-kanban">
+                                                <ClipboardList size={24} opacity={0.5} />
+                                                <span>No active jobs</span>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        );
-                    })}
+                            );
+                        })
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '5rem', gap: '1rem', color: 'var(--text-secondary)' }}>
+                            <Building size={48} opacity={0.3} />
+                            <p>No service points available for this center</p>
+                        </div>
+                    )}
                 </div>
             </div>
 

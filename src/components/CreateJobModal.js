@@ -3,8 +3,10 @@ import { X, User, Phone, Mail, ClipboardList, Building, MapPin, Calendar, Clock,
 import { getServiceCenterDropdown, getProvidingServicesByCenterId } from '../services/serviceProviderService';
 import { prepareJob, createJob, removeJobAndCustomer } from '../services/jobService';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         customerName: '',
         customerPhone: '',
@@ -101,7 +103,16 @@ const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
                         setServices(data.filter(s => s.cluster === true));
                         setNonClusterServices(data.filter(s => s.cluster === false));
                     } catch (error) {
-                        console.error('Failed to fetch services for center:', error);
+                        if (error?.response?.data?.data) {
+                            if (error?.response?.data?.code === 1) {
+                                toast.info("Session expired. Please login again.");
+                                navigate('/login');
+                            } else {
+                                toast.error(error?.response?.data?.data);
+                            }
+                        } else {
+                            toast.error('Network error');
+                        }
                     }
                 }
             }
@@ -129,8 +140,8 @@ const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
             const prepareData = {
                 customer: formData.customerName,
                 phone: formData.customerPhone,
-                centerClusterId: formData.centerClusterId || null,
-                servicesIds: [], // As per user instruction, do not use for now
+                centerClusterId: isCustomService ? null : (formData.centerClusterId || null),
+                servicesIds: isCustomService ? selectedCustomServices.map(s => s.serviceId) : [],
                 serviceCenterId: formData.centerId,
                 appointmentDate: formData.appointmentDate,
                 notes: formData.description
@@ -148,7 +159,16 @@ const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
             }
             setShowTimeline(true);
         } catch (error) {
-            toast.error(error.message || 'Failed to prepare job schedule');
+            if (error?.response?.data?.data) {
+                if (error?.response?.data?.code === 1) {
+                    toast.info("Session expired. Please login again.");
+                    navigate('/login');
+                } else {
+                    toast.error(error?.response?.data?.data);
+                }
+            } else {
+                toast.error('Network error');
+            }
         } finally {
             setIsPreparing(false);
         }
@@ -160,8 +180,8 @@ const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
             const jobData = {
                 customer: formData.customerName,
                 phone: formData.customerPhone,
-                centerClusterId: formData.centerClusterId || null,
-                servicesIds: [],
+                centerClusterId: isCustomService ? null : (formData.centerClusterId || null),
+                servicesIds: isCustomService ? selectedCustomServices.map(s => s.serviceId) : [],
                 serviceCenterId: formData.centerId,
                 appointmentDate: formData.appointmentDate,
                 notes: formData.description
@@ -213,9 +233,16 @@ const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
             setPreparedJobIds(null);
             return true;
         } catch (error) {
-            console.error('Cleanup failed:', error);
-            toast.error(error.message || 'Failed to clean up dummy entities');
-            return false;
+            if (error?.response?.data?.data) {
+                if (error?.response?.data?.code === 1) {
+                    toast.info("Session expired. Please login again.");
+                    navigate('/login');
+                } else {
+                    toast.error(error?.response?.data?.data);
+                }
+            } else {
+                toast.error('Network error');
+            }
         } finally {
             setIsCleaningUp(false);
         }
