@@ -18,6 +18,7 @@ const Jobs = () => {
     const [jobsList, setJobsList] = useState([]);
     const [isLoadingPoints, setIsLoadingPoints] = useState(false);
     const [isLoadingJobs, setIsLoadingJobs] = useState(false);
+    const [highlightedJobId, setHighlightedJobId] = useState(null);
 
     React.useEffect(() => {
         const fetchCenters = async () => {
@@ -88,6 +89,11 @@ const Jobs = () => {
 
     const handleJobCreated = (newJob) => {
         setJobsList([newJob, ...jobsList]);
+    };
+
+    const handleHighlight = (e, jobId) => {
+        e.stopPropagation();
+        setHighlightedJobId(highlightedJobId === jobId ? null : jobId);
     };
 
     const getStatusStyle = (status) => {
@@ -176,41 +182,37 @@ const Jobs = () => {
             </div>
 
             <div className="content-card">
-                <div className="table-toolbar" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                        <div className="search-bar" style={{ position: 'relative', width: '350px' }}>
-                            <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+                <div className="table-toolbar">
+                    <div className="toolbar-filters">
+                        <div className="search-bar-wrapper">
+                            <Search size={18} className="search-icon" />
                             <input
                                 type="text"
                                 placeholder="Search by ID, customer, service..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="form-control"
-                                style={{ paddingLeft: '40px', width: '100%' }}
+                                className="form-control search-input"
                             />
                         </div>
-                        <div className="center-filter" style={{ position: 'relative', width: '250px' }}>
-                            <Building size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+                        <div className="filter-select-wrapper center-filter">
+                            <Building size={18} className="filter-icon" />
                             <select
                                 value={selectedCenter}
                                 onChange={(e) => setSelectedCenter(e.target.value)}
-                                className="form-control"
-                                style={{ paddingLeft: '40px', width: '100%', appearance: 'none', background: 'transparent' }}
+                                className="form-control filter-select"
                             >
-                                {/* <option value="">All Service Centers</option> */}
                                 {centers.map(center => (
                                     <option key={center.id} value={center.id}>{center.name}</option>
                                 ))}
                             </select>
                         </div>
-                        <div className="date-filter" style={{ position: 'relative', width: '200px' }}>
-                            <Calendar size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', pointerEvents: 'none' }} />
+                        <div className="filter-select-wrapper date-filter">
+                            <Calendar size={18} className="filter-icon" />
                             <input
                                 type="date"
                                 value={selectedDate}
                                 onChange={(e) => setSelectedDate(e.target.value)}
-                                className="form-control"
-                                style={{ paddingLeft: '40px', width: '100%' }}
+                                className="form-control filter-date"
                             />
                         </div>
                     </div>
@@ -231,7 +233,7 @@ const Jobs = () => {
                                             <Building size={16} className="kanban-column-icon" />
                                             <span>{point.name}</span>
                                         </div>
-                                        <span className="kanban-column-count">{pointJobs.length}</span>
+                                        <span className="kanban-column-count">{pointJobs.filter(job => !job.freeSlot).length}</span>
                                     </div>
                                     <div className="kanban-cards-container">
                                         {pointJobs.length > 0 ? (
@@ -240,20 +242,48 @@ const Jobs = () => {
                                                     <div
                                                         key={`free-${job.fromTo}-${point.id}`}
                                                         className={`kanban-card kanban-card-free`}
-                                                        style={{ height: job.totalTime <= 5 ? '6%' : `${job.totalTime}%` }}
+                                                        style={{ height: job.totalTime <= 10 ? '11%' : `${job.totalTime}%` }}
                                                     >
                                                         <span className="kanban-card-service">{job.fromTo}</span>
                                                     </div>
                                                 ) : (
                                                     <div
                                                         key={job.id}
-                                                        className={`kanban-card kanban-card-${job.status.toLowerCase()} ${selectedJobId === job.id ? 'selected' : ''}`}
+                                                        className={`kanban-card kanban-card-${job.status.toLowerCase()} ${selectedJobId === job.id ? 'selected' : ''} ${highlightedJobId === job.jobId ? 'highlighted' : ''}`}
                                                         onClick={() => navigate(`/jobs/${job.id}`)}
                                                         style={{ height: job.totalTime <= 13 ? '13%' : `${job.totalTime}%` }}
                                                     >
-                                                        <span className={`kanban-card-id-${job.status.toLowerCase()}`}>{getStatusIcon(job.status)} JOB - {job.jobId}</span>
-                                                        <span className="kanban-card-customer">{job.customerName}</span>
-                                                        <span className="kanban-card-service">{job.fromTo}</span>
+                                                        {job.totalTime < 23 ? (
+                                                            <div className="kanban-card-inline">
+                                                                <span
+                                                                    className={`kanban-card-id-${job.status.toLowerCase()}`}
+                                                                    onClick={(e) => handleHighlight(e, job.jobId)}
+                                                                    style={{ cursor: 'pointer' }}
+                                                                >
+                                                                    {getStatusIcon(job.status)} JOB - {job.jobId}
+                                                                </span>
+                                                                <span className="kanban-card-customer">
+                                                                    {job.customerName}
+                                                                </span>
+                                                                <span className="kanban-card-service">
+                                                                    {job.fromTo}
+                                                                </span>
+                                                            </div>
+                                                        ) : (
+                                                            <>
+                                                                <span
+                                                                    className={`kanban-card-id-${job.status.toLowerCase()}`}
+                                                                    onClick={(e) => handleHighlight(e, job.jobId)}
+                                                                    style={{ cursor: 'pointer' }}
+                                                                >
+                                                                    {getStatusIcon(job.status)} JOB - {job.jobId}
+                                                                </span>
+                                                                <span className="kanban-card-customer">{job.customerName}</span>
+                                                                <span className="kanban-card-service">{job.fromTo}</span>
+                                                            </>
+                                                        )}
+
+
                                                     </div>
                                                 )
                                             ))
