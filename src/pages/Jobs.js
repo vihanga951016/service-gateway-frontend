@@ -239,21 +239,34 @@ const Jobs = () => {
                                         {pointJobs.length > 0 ? (
                                             pointJobs.map(job => (
                                                 job.freeSlot ? (
-                                                    <div
-                                                        key={`free-${job.fromTo}-${point.id}`}
-                                                        className={`kanban-card kanban-card-free`}
-                                                        style={{ height: job.totalTime <= 10 ? '11%' : `${job.totalTime}%` }}
-                                                    >
-                                                        <span className="kanban-card-service">{job.fromTo}</span>
-                                                    </div>
+                                                    <>
+                                                        {job.ignoreThis ? (
+                                                            <div
+                                                                key={`free-${job.fromTo}-${point.id}`}
+                                                                className={`kanban-card kanban-card-ignore`}
+                                                                style={{ height: job.totalTime <= 7 ? '7%' : `${job.totalTime}%` }}
+                                                                aria-disabled="true"
+                                                            >
+                                                                <span className="kanban-card-service text-disabled">Slot Ignored</span>
+                                                            </div>
+                                                        ) : (
+                                                            <div
+                                                                key={`free-${job.fromTo}-${point.id}`}
+                                                                className={`kanban-card kanban-card-free`}
+                                                                style={{ height: job.totalTime <= 6 ? '6%' : `${job.totalTime}%` }}
+                                                            >
+                                                                <span className="kanban-card-service">{job.fromTo}</span>
+                                                            </div>
+                                                        )}
+                                                    </>
                                                 ) : (
                                                     <div
                                                         key={job.id}
                                                         className={`kanban-card kanban-card-${job.status.toLowerCase()} ${selectedJobId === job.id ? 'selected' : ''} ${highlightedJobId === job.jobId ? 'highlighted' : ''}`}
                                                         onClick={() => navigate(`/jobs/${job.id}`)}
-                                                        style={{ height: job.totalTime <= 13 ? '13%' : `${job.totalTime}%` }}
+                                                        style={{ height: job.totalTime <= 8 ? '8%' : `${job.totalTime}%` }}
                                                     >
-                                                        {job.totalTime < 23 ? (
+                                                        {job.totalTime < 10 ? (
                                                             <div className="kanban-card-inline">
                                                                 <span
                                                                     className={`kanban-card-id-${job.status.toLowerCase()}`}
