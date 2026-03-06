@@ -1487,6 +1487,34 @@ body {
   font-weight: 500;
 }
 
+.order-number-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.625rem;
+  background-color: rgba(37, 99, 235, 0.08);
+  color: var(--primary-color);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  min-width: 28px;
+  transition: all 0.2s ease;
+}
+
+[data-theme='dark'] .order-number-badge {
+  background-color: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: #60a5fa;
+}
+
+.order-number-badge:hover {
+  background-color: rgba(37, 99, 235, 0.12);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
 .filter-btn {
   background: none;
   border: none;

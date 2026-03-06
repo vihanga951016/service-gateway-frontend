@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Briefcase, Clock, DollarSign, Loader2, Coins } from 'lucide-react';
+import { X, Briefcase, Clock, DollarSign, Loader2, Coins, Hash } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { addService, updateService } from '../services/serviceProviderService';
 import '../App.css';
@@ -11,13 +11,12 @@ const ServiceModal = ({ isOpen, onClose, onSave, initialData, isViewOnly = false
     const [formData, setFormData] = useState({
         name: '',
         description: '',
+        orderNumber: '',
         hours: '0',
         minutes: '0',
         seconds: '0',
         totalPrice: '',
-        downPrice: '',
-        serviceTimeDepends: false,
-        totalPriceDepends: false
+        downPrice: ''
     });
 
     useEffect(() => {
@@ -43,25 +42,22 @@ const ServiceModal = ({ isOpen, onClose, onSave, initialData, isViewOnly = false
                 id: initialData.id,
                 name: initialData.name || '',
                 description: initialData.description || '',
+                orderNumber: initialData.orderNumber || '',
                 hours: h,
                 minutes: m,
                 seconds: s,
                 totalPrice: initialData.totalPrice || '',
-                downPrice: initialData.downPrice || '',
-                serviceTimeDepends: initialData.serviceTimeDepends || false,
-                totalPriceDepends: initialData.totalPriceDepends || false
-            });
+                downPrice: initialData.downPrice || ''});
         } else {
             setFormData({
                 name: '',
                 description: '',
+                orderNumber: '',
                 hours: '0',
                 minutes: '0',
                 seconds: '0',
                 totalPrice: '',
-                downPrice: '',
-                serviceTimeDepends: false,
-                totalPriceDepends: false
+                downPrice: ''
             });
         }
     }, [initialData, isOpen]);
@@ -91,10 +87,9 @@ const ServiceModal = ({ isOpen, onClose, onSave, initialData, isViewOnly = false
                 id: formData.id,
                 name: formData.name,
                 description: formData.description,
-                serviceTime: formData.serviceTimeDepends ? null : formattedTime,
-                serviceTimeDepends: formData.serviceTimeDepends,
-                totalPrice: formData.totalPriceDepends ? 0 : parseInt(formData.totalPrice, 10),
-                totalPriceDepends: formData.totalPriceDepends,
+                orderNumber: formData.orderNumber,
+                serviceTime: formattedTime,
+                totalPrice: parseInt(formData.totalPrice, 10),
                 downPrice: parseInt(formData.downPrice, 10)
             };
 
@@ -153,6 +148,18 @@ const ServiceModal = ({ isOpen, onClose, onSave, initialData, isViewOnly = false
                                 />
                             </div>
 
+                            {initialData ? <div className="input-group">
+                                <Hash className="input-icon" size={18} />
+                                <input
+                                    type="text"
+                                    name="orderNumber"
+                                    placeholder="Order Number"
+                                    value={formData.orderNumber}
+                                    onChange={handleChange}
+                                    disabled={isViewOnly}
+                                />
+                            </div> : <></>}
+
                             <div className="input-group">
                                 <textarea
                                     name="description"
@@ -163,20 +170,7 @@ const ServiceModal = ({ isOpen, onClose, onSave, initialData, isViewOnly = false
                                 />
                             </div>
 
-                            {/* <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '4px' }}>
-                                <input
-                                    type="checkbox"
-                                    name="serviceTimeDepends"
-                                    id="serviceTimeDepends"
-                                    checked={formData.serviceTimeDepends}
-                                    onChange={handleChange}
-                                    disabled={isViewOnly}
-                                />
-                                <label htmlFor="serviceTimeDepends" style={{ margin: 0, cursor: 'pointer' }}>Service Time Depends</label>
-                            </div> */}
-
-                            {!formData.serviceTimeDepends && (
-                                <>
+                            <>
                                     <label style={{ display: 'block', marginBottom: '4px' }}>Service Time</label>
                                     <div className="time-fields" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                                         <div style={{ flex: 1 }}>
@@ -226,7 +220,6 @@ const ServiceModal = ({ isOpen, onClose, onSave, initialData, isViewOnly = false
                                         </div>
                                     </div>
                                 </>
-                            )}
 
                             {/* <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '4px' }}>
                                 <input

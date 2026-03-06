@@ -288,6 +288,7 @@ const Services = () => {
                         <table className="data-table">
                             <thead>
                                 <tr>
+                                    <th>Order Number</th>
                                     <th>Name</th>
                                     <th>Service Time</th>
                                     <th>Total Price</th>
@@ -300,6 +301,9 @@ const Services = () => {
                                 {services.length > 0 ? (
                                     services.map(service => (
                                         <tr key={service.id}>
+                                            <td className="font-medium">
+                                                <span className="order-number-badge">{service.orderNumber}</span>
+                                            </td>
                                             <td className="font-medium">{service.name}</td>
                                             <td>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>

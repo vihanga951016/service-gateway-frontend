@@ -1038,7 +1038,10 @@ const ServiceCenter = () => {
 
             <ManagePointServicesModal
                 isOpen={isManageServicesModalOpen}
-                onClose={() => setIsManageServicesModalOpen(false)}
+                onClose={() => {
+                    fetchServicePoints();
+                    setIsManageServicesModalOpen(false);
+                }}
                 servicePoint={selectedPointForServices}
                 assignedServices={selectedPointForServices ? (pointServiceAssignments[selectedPointForServices.id] || []) : []}
                 onUpdateServices={(pointId, services) => {

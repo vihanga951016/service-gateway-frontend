@@ -31,15 +31,15 @@ const ManagePointServicesModal = ({ isOpen, onClose, servicePoint, assignedServi
             const services = await getAvailableServicesForPoint(servicePoint.id);
             setAvailableServices(services || []);
         } catch (err) {
-            if (error?.response?.data?.data) {
-                if (error?.response?.data?.code === 1) {
+            if (err?.response?.data?.data) {
+                if (err?.response?.data?.code === 1) {
                     toast.info("Session expired. Please login again.");
                     navigate('/login');
                 } else {
-                    toast.error(error?.response?.data?.data);
+                    toast.error(err?.response?.data?.data);
                 }
             } else {
-                toast.error('Failed to load service center details');
+                toast.error('Network error');
             }
             setAvailableServices([]);
         } finally {
@@ -56,15 +56,15 @@ const ManagePointServicesModal = ({ isOpen, onClose, servicePoint, assignedServi
             const services = await getAssignedServicesForPoint(servicePoint.id);
             setLocalAssignedServices(services || []);
         } catch (err) {
-            if (error?.response?.data?.data) {
-                if (error?.response?.data?.code === 1) {
+            if (err?.response?.data?.data) {
+                if (err?.response?.data?.code === 1) {
                     toast.info("Session expired. Please login again.");
                     navigate('/login');
                 } else {
-                    toast.error(error?.response?.data?.data);
+                    toast.error(err?.response?.data?.data);
                 }
             } else {
-                toast.error('Failed to load service center details');
+                toast.error('Network error');
             }
             setLocalAssignedServices([]);
         } finally {
@@ -88,14 +88,14 @@ const ManagePointServicesModal = ({ isOpen, onClose, servicePoint, assignedServi
             onUpdateServices(servicePoint.id, updated);
             // Remove from available services
             setAvailableServices(prev => prev.filter(s => s.id !== service.id));
-            toast.success(`${service.name} added to ${servicePoint.name}`);
+            // toast.success(`${service.name} added to ${servicePoint.name}`);
         } catch (err) {
-            if (error?.response?.data?.data) {
-                if (error?.response?.data?.code === 1) {
+            if (err?.response?.data?.data) {
+                if (err?.response?.data?.code === 1) {
                     toast.info("Session expired. Please login again.");
                     navigate('/login');
                 } else {
-                    toast.error(error?.response?.data?.data);
+                    toast.warn(err?.response?.data?.data);
                 }
             } else {
                 toast.error('Network error');
@@ -114,14 +114,14 @@ const ManagePointServicesModal = ({ isOpen, onClose, servicePoint, assignedServi
             onUpdateServices(servicePoint.id, updated);
             // Add back to available services
             setAvailableServices(prev => [...prev, service]);
-            toast.success(`${service.name} removed from ${servicePoint.name}`);
+            // toast.success(`${service.name} removed from ${servicePoint.name}`);
         } catch (err) {
-            if (error?.response?.data?.data) {
-                if (error?.response?.data?.code === 1) {
+            if (err?.response?.data?.data) {
+                if (err?.response?.data?.code === 1) {
                     toast.info("Session expired. Please login again.");
                     navigate('/login');
                 } else {
-                    toast.error(error?.response?.data?.data);
+                    toast.error(err?.response?.data?.data);
                 }
             } else {
                 toast.error('Network error');
@@ -161,7 +161,7 @@ const ManagePointServicesModal = ({ isOpen, onClose, servicePoint, assignedServi
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '500px', overflowY: 'auto', paddingRight: '0.5rem' }}>
                                 {localAssignedServices.length > 0 ? (
-                                    localAssignedServices.map(service => (
+                                    localAssignedServices.map((service, index) => (
                                         <div
                                             key={service.id}
                                             style={{
@@ -176,11 +176,12 @@ const ManagePointServicesModal = ({ isOpen, onClose, servicePoint, assignedServi
                                             }}
                                         >
                                             <div style={{ flex: 1 }}>
-                                                <div style={{ fontWeight: '600', fontSize: '0.95rem', marginBottom: '0.25rem' }}>
+                                                <div style={{ fontWeight: '600', fontSize: '0.95rem', marginBottom: '0.25rem', display: 'flex', alignItems: 'center' }}>
+                                                    <span className="order-number-badge" style={{ marginRight: '8px' }}>{service.orderNumber}</span>
                                                     {service.name}
                                                 </div>
                                                 <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                                                    <span style={{
+                                                    {/* <span style={{
                                                         padding: '0.15rem 0.5rem',
                                                         borderRadius: '12px',
                                                         background: 'rgba(37, 99, 235, 0.15)',
@@ -189,7 +190,7 @@ const ManagePointServicesModal = ({ isOpen, onClose, servicePoint, assignedServi
                                                         fontWeight: '600'
                                                     }}>
                                                         {service.category}
-                                                    </span>
+                                                    </span> */}
                                                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                                         <Clock size={12} />
                                                         {service.serviceTime}
@@ -199,19 +200,29 @@ const ManagePointServicesModal = ({ isOpen, onClose, servicePoint, assignedServi
                                                     </span>
                                                 </div>
                                             </div>
-                                            <button
-                                                className="icon-action-btn text-danger"
-                                                onClick={() => handleRemoveService(service)}
-                                                disabled={processingId === service.id}
-                                                title="Remove service"
-                                                style={{ marginLeft: '1rem' }}
-                                            >
-                                                {processingId === service.id ? (
-                                                    <Loader2 size={16} className="animate-spin" />
-                                                ) : (
-                                                    <Trash2 size={16} />
-                                                )}
-                                            </button>
+                                            {(index === 0 || index === localAssignedServices.length - 1) && (
+                                                <button
+                                                    className="icon-action-btn text-danger"
+                                                    onClick={() => handleRemoveService(service)}
+                                                    disabled={processingId === service.id}
+                                                    title="Remove service"
+                                                    style={{
+                                                        marginLeft: '1rem',
+                                                        width: '32px',
+                                                        height: '32px',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        transition: 'all 0.3s ease'
+                                                    }}
+                                                >
+                                                    {processingId === service.id ? (
+                                                        <Loader2 size={16} className="animate-spin" />
+                                                    ) : (
+                                                        <Trash2 size={16} />
+                                                    )}
+                                                </button>
+                                            )}
                                         </div>
                                     ))
                                 ) : (
@@ -287,7 +298,7 @@ const ManagePointServicesModal = ({ isOpen, onClose, servicePoint, assignedServi
                                         </button>
                                     </div>
                                 ) : filteredAvailableServices.length > 0 ? (
-                                    filteredAvailableServices.map(service => (
+                                    filteredAvailableServices.map((service, index) => (
                                         <div
                                             key={service.id}
                                             style={{
@@ -305,7 +316,8 @@ const ManagePointServicesModal = ({ isOpen, onClose, servicePoint, assignedServi
                                             onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                                         >
                                             <div style={{ flex: 1 }}>
-                                                <div style={{ fontWeight: '600', fontSize: '0.95rem', marginBottom: '0.25rem' }}>
+                                                <div style={{ fontWeight: '600', fontSize: '0.95rem', marginBottom: '0.25rem', display: 'flex', alignItems: 'center' }}>
+                                                    <span className="order-number-badge" style={{ marginRight: '8px' }}>{service.orderNumber}</span>
                                                     {service.name}
                                                 </div>
                                                 <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
@@ -333,30 +345,38 @@ const ManagePointServicesModal = ({ isOpen, onClose, servicePoint, assignedServi
                                                     )}
                                                 </div>
                                             </div>
-                                            <button
-                                                className="secondary-btn"
-                                                onClick={() => handleAddService(service)}
-                                                disabled={processingId === service.id}
-                                                style={{
-                                                    padding: '0.4rem 0.75rem',
-                                                    fontSize: '0.85rem',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '0.4rem',
-                                                    marginLeft: '1rem',
-                                                    minWidth: '70px',
-                                                    justifyContent: 'center'
-                                                }}
-                                            >
-                                                {processingId === service.id ? (
-                                                    <Loader2 size={14} className="animate-spin" />
-                                                ) : (
-                                                    <>
-                                                        <Plus size={14} />
-                                                        Add
-                                                    </>
-                                                )}
-                                            </button>
+                                            {(localAssignedServices.length === 0 || index === 0) && (
+                                                <button
+                                                    className="secondary-btn"
+                                                    onClick={() => handleAddService(service)}
+                                                    disabled={processingId === service.id}
+                                                    style={{
+                                                        padding: '0.4rem 0.75rem',
+                                                        fontSize: '0.85rem',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '0.4rem',
+                                                        marginLeft: '1rem',
+                                                        minWidth: '85px',
+                                                        justifyContent: 'center',
+                                                        transition: 'all 0.3s ease',
+                                                        position: 'relative',
+                                                        overflow: 'hidden'
+                                                    }}
+                                                >
+                                                    {processingId === service.id ? (
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                            <Loader2 size={14} className="animate-spin" />
+                                                            <span style={{ opacity: 0.7 }}>Adding</span>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <Plus size={14} />
+                                                            Add
+                                                        </>
+                                                    )}
+                                                </button>
+                                            )}
                                         </div>
                                     ))
                                 ) : (
