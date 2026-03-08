@@ -255,7 +255,7 @@ const Jobs = () => {
                                                             <div
                                                                 key={`free-${job.fromTo}-${point.id}`}
                                                                 className={`kanban-card kanban-card-free`}
-                                                                style={{ height: job.totalTime <= 6 ? '6%' : `${job.totalTime}%` }}
+                                                                style={{ height: job.totalTime <= 12 ? '12%' : `${job.totalTime}%` }}
                                                             >
                                                                 <span className="kanban-card-service">{job.fromTo}</span>
                                                             </div>
@@ -266,9 +266,9 @@ const Jobs = () => {
                                                         key={job.id}
                                                         className={`kanban-card kanban-card-${job.status.toLowerCase()} ${selectedJobId === job.id ? 'selected' : ''} ${highlightedJobId === job.jobId ? 'highlighted' : ''}`}
                                                         onClick={() => navigate(`/jobs/${job.id}`)}
-                                                        style={{ height: job.totalTime <= 6 ? '6%' : `${job.totalTime}%` }}
+                                                        style={{ height: job.totalTime <= 12 ? '12%' : `${job.totalTime}%` }}
                                                     >
-                                                        {job.totalTime <= 11 ? (
+                                                        {job.totalTime <= 17 ? (
                                                             <div className="kanban-card-inline">
                                                                 <span
                                                                     className={`kanban-card-id-${job.status.toLowerCase()}`}

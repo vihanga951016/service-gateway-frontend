@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Layers, Check, ChevronDown, Search, Loader2, ArrowUp, ArrowDown, GripVertical, Pencil } from 'lucide-react';
+import { X, Layers, Check, ChevronDown, Search, Loader2, Pencil } from 'lucide-react';
 import { getServicesDropdown, addCluster, updateCluster } from '../services/serviceProviderService';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
@@ -68,19 +68,7 @@ const ClusterModal = ({ isOpen, onClose, onClusterSaved, cluster = null }) => {
         }
     };
 
-    const moveServiceUp = (index) => {
-        if (index === 0) return;
-        const newServices = [...selectedServices];
-        [newServices[index - 1], newServices[index]] = [newServices[index], newServices[index - 1]];
-        setSelectedServices(newServices);
-    };
 
-    const moveServiceDown = (index) => {
-        if (index === selectedServices.length - 1) return;
-        const newServices = [...selectedServices];
-        [newServices[index], newServices[index + 1]] = [newServices[index + 1], newServices[index]];
-        setSelectedServices(newServices);
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -291,7 +279,7 @@ const ClusterModal = ({ isOpen, onClose, onClusterSaved, cluster = null }) => {
                             {selectedServices.length > 0 && (
                                 <div style={{ marginTop: '1rem' }}>
                                     <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                                        Selected Services (Drag to reorder)
+                                        Selected Services
                                     </label>
                                     <div style={{
                                         border: '1px solid var(--border-color)',
@@ -310,69 +298,9 @@ const ClusterModal = ({ isOpen, onClose, onClusterSaved, cluster = null }) => {
                                                     gap: '10px'
                                                 }}
                                             >
-                                                <GripVertical size={16} style={{ color: 'var(--text-secondary)', cursor: 'grab' }} />
-
-                                                {/* Order Number */}
-                                                <span style={{
-                                                    background: 'var(--primary-color)',
-                                                    color: 'white',
-                                                    width: '24px',
-                                                    height: '24px',
-                                                    borderRadius: '50%',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    fontSize: '0.75rem',
-                                                    fontWeight: '600',
-                                                    flexShrink: 0
-                                                }}>
-                                                    {index + 1}
-                                                </span>
-
-                                                {/* Service Name */}
                                                 <span style={{ flex: 1, fontSize: '0.9rem', fontWeight: '500' }}>
                                                     {service.name}
                                                 </span>
-
-                                                {/* Reorder Buttons */}
-                                                <div style={{ display: 'flex', gap: '4px' }}>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => moveServiceUp(index)}
-                                                        disabled={index === 0}
-                                                        style={{
-                                                            background: index === 0 ? 'var(--hover-bg)' : 'rgba(37, 99, 235, 0.1)',
-                                                            border: 'none',
-                                                            borderRadius: '4px',
-                                                            padding: '4px',
-                                                            cursor: index === 0 ? 'not-allowed' : 'pointer',
-                                                            opacity: index === 0 ? 0.5 : 1,
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center'
-                                                        }}
-                                                    >
-                                                        <ArrowUp size={14} color={index === 0 ? 'var(--text-secondary)' : 'var(--primary-color)'} />
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => moveServiceDown(index)}
-                                                        disabled={index === selectedServices.length - 1}
-                                                        style={{
-                                                            background: index === selectedServices.length - 1 ? 'var(--hover-bg)' : 'rgba(37, 99, 235, 0.1)',
-                                                            border: 'none',
-                                                            borderRadius: '4px',
-                                                            padding: '4px',
-                                                            cursor: index === selectedServices.length - 1 ? 'not-allowed' : 'pointer',
-                                                            opacity: index === selectedServices.length - 1 ? 0.5 : 1,
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center'
-                                                        }}
-                                                    >
-                                                        <ArrowDown size={14} color={index === selectedServices.length - 1 ? 'var(--text-secondary)' : 'var(--primary-color)'} />
-                                                    </button>
-                                                </div>
 
                                                 {/* Remove Button */}
                                                 <button

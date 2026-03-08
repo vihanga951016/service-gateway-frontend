@@ -955,7 +955,7 @@ const ServiceCenter = () => {
                                                                                         <Ban size={16} />
                                                                                     )}
                                                                                 </button>
-                                                                                <button
+                                                                                {/* <button
                                                                                     className="icon-action-btn"
                                                                                     onClick={() => handleMoveService(index, 'up')}
                                                                                     disabled={index === 0}
@@ -982,7 +982,7 @@ const ServiceCenter = () => {
                                                                                     }}
                                                                                 >
                                                                                     <ArrowDown size={16} />
-                                                                                </button>
+                                                                                </button> */}
                                                                             </div>
                                                                         </td>
                                                                     </tr>
