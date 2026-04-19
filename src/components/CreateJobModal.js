@@ -1,9 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, User, Phone, Mail, ClipboardList, Building, MapPin, Calendar, Clock, MessageSquare, Briefcase, Search, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, User, Phone, Mail, ClipboardList, Building, MapPin, Calendar as CalendarIcon, Clock, MessageSquare, Briefcase, Search, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { DatePicker, Badge, Tooltip, ConfigProvider, theme as antTheme } from 'antd';
 import { getServiceCenterDropdown, getProvidingServicesByCenterId } from '../services/serviceProviderService';
-import { prepareJob, createJob, removeJobAndCustomer } from '../services/jobService';
+import { prepareJob, removeJobAndCustomer, verifyJob } from '../services/jobService';
+import { getAllHolidays, getCommonHolidays } from '../services/holidayService';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import dayjs from 'dayjs';
+import { useTheme } from '../context/ThemeContext';
 
 const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
     const navigate = useNavigate();
@@ -24,6 +28,8 @@ const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
     const [centers, setCenters] = useState([]);
     const [services, setServices] = useState([]); // Cluster services
     const [nonClusterServices, setNonClusterServices] = useState([]); // Non-cluster services
+    const [holidays, setHolidays] = useState({});
+    const [activeWeekdays, setActiveWeekdays] = useState({});
     const [isCustomService, setIsCustomService] = useState(false);
     const [selectedCustomServices, setSelectedCustomServices] = useState([]);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -35,18 +41,47 @@ const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
     const [preparedJobIds, setPreparedJobIds] = useState(null); // { jobId, customerId }
     const [isCleaningUp, setIsCleaningUp] = useState(false);
     const dropdownRef = useRef(null);
+    const { theme } = useTheme();
+    const isDarkMode = theme === 'dark';
 
     useEffect(() => {
         if (isOpen) {
-            const fetchCenters = async () => {
+            const fetchInitialData = async () => {
                 try {
-                    const data = await getServiceCenterDropdown();
-                    setCenters(data || []);
+                    const [centersData, holidayData, commonHolidayData] = await Promise.all([
+                        getServiceCenterDropdown(),
+                        getAllHolidays(),
+                        getCommonHolidays()
+                    ]);
+
+                    setCenters(centersData || []);
+
+                    // Process holidays
+                    const holidayList = Array.isArray(holidayData) ? holidayData : (holidayData?.data || []);
+                    const holidayMap = {};
+                    holidayList.forEach(item => {
+                        if (item && item.holiday) {
+                            holidayMap[item.holiday] = item.name || 'Holiday';
+                        }
+                    });
+                    setHolidays(holidayMap);
+
+                    // Process common holidays
+                    const commonHolidays = commonHolidayData?.data || commonHolidayData || {};
+                    setActiveWeekdays({
+                        Sunday: !!commonHolidays.sunday,
+                        Monday: !!commonHolidays.monday,
+                        Tuesday: !!commonHolidays.tuesday,
+                        Wednesday: !!commonHolidays.wednesday,
+                        Thursday: !!commonHolidays.thursday,
+                        Friday: !!commonHolidays.friday,
+                        Saturday: !!commonHolidays.saturday
+                    });
                 } catch (error) {
-                    console.error('Failed to fetch centers:', error);
+                    console.error('Failed to fetch initial data:', error);
                 }
             };
-            fetchCenters();
+            fetchInitialData();
         }
     }, [isOpen]);
 
@@ -177,19 +212,27 @@ const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
     const handleFinalCreate = async () => {
         setLoading(true);
         try {
-            const jobData = {
-                customer: formData.customerName,
-                phone: formData.customerPhone,
-                centerClusterId: isCustomService ? null : (formData.centerClusterId || null),
-                servicesIds: isCustomService ? selectedCustomServices.map(s => s.serviceId) : [],
-                serviceCenterId: formData.centerId,
-                appointmentDate: formData.appointmentDate,
-                notes: formData.description
-            };
+            if (!preparedJobIds?.jobId) {
+                throw new Error('No job prepared to verify');
+            }
 
-            const response = await createJob(jobData);
+            // Call verify service using the jobId from the prepare response
+            const response = await verifyJob(preparedJobIds.jobId);
+
             toast.success('Job created successfully!');
-            onJobCreated(response);
+
+            // Pass the job info back to the parent to update the list
+            onJobCreated({
+                jobId: preparedJobIds.jobId,
+                status: 'Pending', // Default status for new jobs
+                customerName: formData.customerName,
+                serviceName: formData.serviceName,
+                ...response?.data // Include any updated data from the verify response
+            });
+
+            // Important: clear preparedJobIds before closing so handleModalClose 
+            // doesn't trigger a redundant cleanup call.
+            setPreparedJobIds(null);
             onClose();
 
             // Reset form
@@ -212,7 +255,16 @@ const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
             setShowTimeline(false);
             setPreparedJobIds(null);
         } catch (error) {
-            toast.error(error.message || 'Failed to create job');
+            if (error?.response?.data?.data) {
+                if (error?.response?.data?.code === 1) {
+                    toast.info("Session expired. Please login again.");
+                    navigate('/login');
+                } else {
+                    toast.error(error?.response?.data?.data);
+                }
+            } else {
+                toast.error('Network error');
+            }
         } finally {
             setLoading(false);
         }
@@ -281,7 +333,7 @@ const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
                         <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Review the suggested schedule for the requested services</p>
                     </div>
                     <div style={{ fontSize: '0.85rem', background: 'rgba(37, 99, 235, 0.1)', color: 'var(--primary-color)', padding: '6px 14px', borderRadius: '20px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <Calendar size={14} />
+                        <CalendarIcon size={14} />
                         {timelineData?.appointmentDate || formData.appointmentDate || 'Today'}
                     </div>
                 </div>
@@ -603,15 +655,72 @@ const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
                                 </div>
 
                                 <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}><Calendar size={14} /> Appointment Date</label>
-                                    <input
-                                        type="date"
-                                        name="appointmentDate"
-                                        value={formData.appointmentDate}
-                                        onChange={handleChange}
-                                        required
-                                        className="form-control"
-                                    />
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}><CalendarIcon size={14} /> Appointment Date</label>
+                                    <ConfigProvider
+                                        theme={{
+                                            algorithm: isDarkMode ? antTheme.darkAlgorithm : antTheme.defaultAlgorithm,
+                                            token: {
+                                                colorError: '#ff4d4f',
+                                            }
+                                        }}
+                                    >
+                                        <DatePicker
+                                            className="form-control"
+                                            style={{ width: '100%', height: '42px', borderRadius: '8px' }}
+                                            value={formData.appointmentDate ? dayjs(formData.appointmentDate) : null}
+                                            onChange={(date) => {
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    appointmentDate: date ? date.format('YYYY-MM-DD') : ''
+                                                }));
+                                            }}
+                                            disabledDate={(current) => {
+                                                if (!current) return false;
+
+                                                // Disable past dates and today (only allow tomorrow onwards)
+                                                const isPastOrToday = current.isBefore(dayjs().endOf('day'));
+                                                if (isPastOrToday) return true;
+
+                                                const dateString = current.format('YYYY-MM-DD');
+                                                const dayName = current.format('dddd');
+                                                // Disable if it's a specific holiday OR a recurring weekday holiday
+                                                return !!holidays[dateString] || !!activeWeekdays[dayName];
+                                            }}
+                                            cellRender={(current) => {
+                                                const dateString = current.format('YYYY-MM-DD');
+                                                const holidayName = holidays[dateString];
+                                                const dayName = current.format('dddd');
+                                                const isRecurringHoliday = activeWeekdays[dayName];
+                                                const isHoliday = !!holidayName || isRecurringHoliday;
+                                                const displayHolidayName = holidayName || (isRecurringHoliday ? 'Common Holiday' : '');
+
+                                                if (isHoliday) {
+                                                    return (
+                                                        <Tooltip title={displayHolidayName}>
+                                                            <div className="ant-picker-cell-inner" style={{
+                                                                position: 'relative',
+                                                                backgroundColor: isDarkMode ? 'rgba(255, 77, 79, 0.15)' : 'rgba(255, 77, 79, 0.08)',
+                                                                borderRadius: '4px'
+                                                            }}>
+                                                                {current.date()}
+                                                                <div style={{
+                                                                    position: 'absolute',
+                                                                    bottom: '2px',
+                                                                    left: '50%',
+                                                                    transform: 'translateX(-50%)',
+                                                                    width: '4px',
+                                                                    height: '4px',
+                                                                    borderRadius: '50%',
+                                                                    backgroundColor: '#ff4d4f'
+                                                                }} />
+                                                            </div>
+                                                        </Tooltip>
+                                                    );
+                                                }
+                                                return <div className="ant-picker-cell-inner">{current.date()}</div>;
+                                            }}
+                                        />
+                                    </ConfigProvider>
                                 </div>
 
                                 <div className="form-group" style={{ gridColumn: 'span 2' }}>

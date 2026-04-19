@@ -1,54 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Shield, MapPin, Briefcase, ClipboardList, Layers } from 'lucide-react';
-import axios from 'axios';
-import { toast } from 'react-toastify';
-import { getConfig } from '../config';
-
+import React from 'react';
+import { NavLink } from 'react-router-dom';
+import { LayoutDashboard, Users, Shield, MapPin, Briefcase, ClipboardList, Layers, Calendar } from 'lucide-react';
+import { useUser } from '../context/UserContext';
 
 const Sidebar = () => {
-    const navigate = useNavigate();
-    const [permissions, setPermissions] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const { hasPermission, loading } = useUser();
 
-    useEffect(() => {
-        const fetchPermissions = async () => {
-            try {
-                const baseUrl = getConfig().baseUrl;
-                const token = localStorage.getItem('token');
-                const response = await axios.get(`${baseUrl}/user/load-permissions`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-
-                if (response.data && response.data.data) {
-                    console.log(response.data.data);
-
-                    setPermissions(response.data.data);
-                }
-            } catch (error) {
-                if (error?.response?.data?.data) {
-                    if (error?.response?.data?.code === 1) {
-                        toast.info("Session expired. Please login again.");
-                        navigate('/login');
-                    } else {
-                        toast.error(error?.response?.data?.data);
-                    }
-                } else {
-                    toast.error('Network error');
-                }
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchPermissions();
-    }, []);
-
-    const hasPermission = (permissionName) => {
-        return permissions.includes(permissionName);
-    };
+    if (loading) {
+        return (
+            <aside className="sidebar">
+                <div className="sidebar-header">
+                    <img src="/logo512.png" alt="Service Gateway Logo" className="sidebar-logo" />
+                </div>
+                <div className="sidebar-nav" style={{ padding: '20px', textAlign: 'center' }}>
+                    Loading...
+                </div>
+            </aside>
+        );
+    }
 
     return (
         <aside className="sidebar">
@@ -119,6 +88,16 @@ const Sidebar = () => {
                     >
                         <Layers size={20} />
                         <span>Clusters</span>
+                    </NavLink>
+                )}
+
+                {hasPermission('Holiday Management') && (
+                    <NavLink
+                        to="/calendar"
+                        className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                    >
+                        <Calendar size={20} />
+                        <span>Calendar</span>
                     </NavLink>
                 )}
 

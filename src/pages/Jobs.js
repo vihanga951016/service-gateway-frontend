@@ -6,12 +6,14 @@ import { getJobSchedule } from '../services/jobService';
 import CreateJobModal from '../components/CreateJobModal';
 import '../App.css';
 import { toast } from 'react-toastify';
+import Tooltip from '@mui/material/Tooltip';
 
 const Jobs = () => {
+    const location = useLocation();
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedCenter, setSelectedCenter] = useState(''); // Stores center ID
-    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+    const [selectedCenter, setSelectedCenter] = useState(location.state?.selectedCenter || ''); // Stores center ID
+    const [selectedDate, setSelectedDate] = useState(location.state?.selectedDate || new Date().toISOString().split('T')[0]);
     const [centers, setCenters] = useState([]);
     const [servicePoints, setServicePoints] = useState([]);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -25,7 +27,7 @@ const Jobs = () => {
             try {
                 const data = await getServiceCenterDropdown();
                 setCenters(data || []);
-                if (data && data.length > 0) {
+                if (data && data.length > 0 && !selectedCenter) {
                     setSelectedCenter(data[0].id.toString());
                 }
             } catch (error) {
@@ -88,7 +90,7 @@ const Jobs = () => {
 
 
     const handleJobCreated = (newJob) => {
-        setJobsList([newJob, ...jobsList]);
+        fetchJobSchedule();
     };
 
     const handleHighlight = (e, jobId) => {
@@ -98,11 +100,11 @@ const Jobs = () => {
 
     const getStatusStyle = (status) => {
         switch (status) {
-            case 'Completed': return { background: '#10b98115', color: '#10b981' };
-            case 'In Progress': return { background: '#3b82f615', color: '#3b82f6' };
-            case 'Pending': return { background: '#f59e0b15', color: '#f59e0b' };
-            case 'Cancelled': return { background: '#ef444415', color: '#ef4444' };
-            default: return { background: '#64748b15', color: '#64748b' };
+            case 'Completed': return { background: 'var(--success-bg)', color: 'var(--success-color)' };
+            case 'In Progress': return { background: 'var(--info-bg)', color: 'var(--info-color)' };
+            case 'Pending': return { background: 'var(--warning-bg)', color: 'var(--warning-color)' };
+            case 'Cancelled': return { background: 'var(--danger-bg)', color: 'var(--danger-color)' };
+            default: return { background: 'var(--hover-bg)', color: 'var(--text-secondary)' };
         }
     };
 
@@ -125,7 +127,6 @@ const Jobs = () => {
         return matchesSearch;
     });
 
-    const location = useLocation();
     const selectedJobId = location.state?.selectedJobId;
 
     const getJobsForPoint = (pointName) => {
@@ -198,7 +199,11 @@ const Jobs = () => {
                             <Building size={18} className="filter-icon" />
                             <select
                                 value={selectedCenter}
-                                onChange={(e) => setSelectedCenter(e.target.value)}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    setSelectedCenter(val);
+                                    navigate(location.pathname, { replace: true, state: { ...location.state, selectedCenter: val, selectedDate } });
+                                }}
                                 className="form-control filter-select"
                             >
                                 {centers.map(center => (
@@ -211,7 +216,11 @@ const Jobs = () => {
                             <input
                                 type="date"
                                 value={selectedDate}
-                                onChange={(e) => setSelectedDate(e.target.value)}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    setSelectedDate(val);
+                                    navigate(location.pathname, { replace: true, state: { ...location.state, selectedCenter, selectedDate: val } });
+                                }}
                                 className="form-control filter-date"
                             />
                         </div>
@@ -262,44 +271,98 @@ const Jobs = () => {
                                                         )}
                                                     </>
                                                 ) : (
-                                                    <div
-                                                        key={job.id}
-                                                        className={`kanban-card kanban-card-${job.status.toLowerCase()} ${selectedJobId === job.id ? 'selected' : ''} ${highlightedJobId === job.jobId ? 'highlighted' : ''}`}
-                                                        onClick={() => navigate(`/jobs/${job.id}`)}
-                                                        style={{ height: job.totalTime <= 12 ? '12%' : `${job.totalTime}%` }}
-                                                    >
-                                                        {job.totalTime <= 17 ? (
-                                                            <div className="kanban-card-inline">
-                                                                <span
-                                                                    className={`kanban-card-id-${job.status.toLowerCase()}`}
-                                                                    onClick={(e) => handleHighlight(e, job.jobId)}
-                                                                    style={{ cursor: 'pointer' }}
-                                                                >
-                                                                    {getStatusIcon(job.status)} JOB - {job.jobId}
-                                                                </span>
-                                                                <span className="kanban-card-customer">
-                                                                    {job.customerName}
-                                                                </span>
-                                                                <span className="kanban-card-service">
-                                                                    {job.fromTo}
-                                                                </span>
+                                                    <> {job.verified ? (
+                                                        <>
+                                                            <div
+                                                                key={job.jobId}
+                                                                className={`kanban-card kanban-card-${job.status.toLowerCase()} ${selectedJobId === job.jobId ? 'selected' : ''} ${highlightedJobId === job.jobId ? 'highlighted' : ''}`}
+                                                                onClick={() => navigate(`/jobs/${job.jobId}`, {
+                                                                    state: {
+                                                                        selectedCenter,
+                                                                        selectedDate
+                                                                    }
+                                                                })}
+                                                                style={{ height: job.totalTime <= 12 ? '12%' : `${job.totalTime}%` }}
+                                                            >
+                                                                {job.totalTime <= 17 ? (
+                                                                    <div className="kanban-card-inline">
+                                                                        <span
+                                                                            className={`kanban-card-id-${job.status.toLowerCase()}`}
+                                                                            onClick={(e) => handleHighlight(e, job.jobId)}
+                                                                            style={{ cursor: 'pointer' }}
+                                                                        >
+                                                                            {getStatusIcon(job.status)} JOB - {job.jobId}
+                                                                        </span>
+                                                                        <span className="kanban-card-customer">
+                                                                            {job.customerName}
+                                                                        </span>
+                                                                        <span className="kanban-card-service">
+                                                                            {job.fromTo}
+                                                                        </span>
+                                                                    </div>
+                                                                ) : (
+                                                                    <>
+                                                                        <span
+                                                                            className={`kanban-card-id-${job.status.toLowerCase()}`}
+                                                                            onClick={(e) => handleHighlight(e, job.jobId)}
+                                                                            style={{ cursor: 'pointer' }}
+                                                                        >
+                                                                            {getStatusIcon(job.status)} JOB - {job.jobId}
+                                                                        </span>
+                                                                        <span className="kanban-card-customer">{job.customerName}</span>
+                                                                        <span className="kanban-card-service">{job.fromTo}</span>
+                                                                    </>
+                                                                )}
                                                             </div>
-                                                        ) : (
-                                                            <>
-                                                                <span
-                                                                    className={`kanban-card-id-${job.status.toLowerCase()}`}
-                                                                    onClick={(e) => handleHighlight(e, job.jobId)}
-                                                                    style={{ cursor: 'pointer' }}
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Tooltip title="Job is at verification stage" arrow placement="top">
+                                                                <div
+                                                                    key={job.jobId}
+                                                                    className={`kanban-card kanban-card-verifing ${selectedJobId === job.jobId ? 'selected' : ''} ${highlightedJobId === job.jobId ? 'highlighted' : ''}`}
+                                                                    onClick={() => navigate(`/jobs/${job.jobId}`, {
+                                                                        state: {
+                                                                            selectedCenter,
+                                                                            selectedDate
+                                                                        }
+                                                                    })}
+                                                                    style={{ height: job.totalTime <= 12 ? '12%' : `${job.totalTime}%` }}
                                                                 >
-                                                                    {getStatusIcon(job.status)} JOB - {job.jobId}
-                                                                </span>
-                                                                <span className="kanban-card-customer">{job.customerName}</span>
-                                                                <span className="kanban-card-service">{job.fromTo}</span>
-                                                            </>
-                                                        )}
-
-
-                                                    </div>
+                                                                    {job.totalTime <= 17 ? (
+                                                                        <div className="kanban-card-inline">
+                                                                            <span
+                                                                                className={`kanban-card-id-verifing`}
+                                                                                onClick={(e) => handleHighlight(e, job.jobId)}
+                                                                                style={{ cursor: 'pointer' }}
+                                                                            >
+                                                                                {getStatusIcon(job.status)} JOB - {job.jobId}
+                                                                            </span>
+                                                                            <span className="kanban-card-customer">
+                                                                                {job.customerName}
+                                                                            </span>
+                                                                            <span className="kanban-card-service">
+                                                                                {job.fromTo}
+                                                                            </span>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <>
+                                                                            <span
+                                                                                className={`kanban-card-id-verifing`}
+                                                                                onClick={(e) => handleHighlight(e, job.jobId)}
+                                                                                style={{ cursor: 'pointer' }}
+                                                                            >
+                                                                                {getStatusIcon(job.status)} JOB - {job.jobId}
+                                                                            </span>
+                                                                            <span className="kanban-card-customer">{job.customerName}</span>
+                                                                            <span className="kanban-card-service">{job.fromTo}</span>
+                                                                        </>
+                                                                    )}
+                                                                </div>
+                                                            </Tooltip>
+                                                        </>
+                                                    )}
+                                                    </>
                                                 )
                                             ))
                                         ) : (

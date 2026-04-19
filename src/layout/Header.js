@@ -5,54 +5,14 @@ import { Bell, UserCircle, User, Settings, LogOut, Building } from 'lucide-react
 import SettingsModal from '../components/SettingsModal';
 import { getConfig } from '../config';
 import { toast } from 'react-toastify';
-import { getUserHeaderData } from '../services/userService';
+import { useUser } from '../context/UserContext';
 
 const Header = () => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-    const [userInfo, setUserInfo] = useState({
-        name: 'Loading...',
-        email: '',
-        userType: '',
-        provider: '',
-        providerId: ''
-    });
-    const [isLoadingUserData, setIsLoadingUserData] = useState(true);
+    const { userInfo, loading: isLoadingUserData } = useUser();
     const dropdownRef = useRef(null);
     const navigate = useNavigate();
-
-    // Fetch user info from API
-    useEffect(() => {
-        const fetchUserData = async () => {
-            try {
-                setIsLoadingUserData(true);
-                const data = await getUserHeaderData();
-
-                setUserInfo({
-                    name: data.userName || 'User',
-                    email: data.email || '',
-                    userType: data.userType || 'User',
-                    provider: data.serviceCenter || '',
-                    providerId: data.providerId || ''
-                });
-            } catch (error) {
-                if (error?.response?.data?.data) {
-                    if (error?.response?.data?.code === 1) {
-                        toast.error(error?.response?.data?.data);
-                        navigate('/login');
-                    } else {
-                        toast.error(error?.response?.data?.data);
-                    }
-                } else {
-                    toast.error('Network error');
-                }
-            } finally {
-                setIsLoadingUserData(false);
-            }
-        };
-
-        fetchUserData();
-    }, []);
 
     // Close dropdown when clicking outside
     useEffect(() => {

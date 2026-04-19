@@ -101,10 +101,10 @@ const Clusters = () => {
 
     const getStatusStyle = (status) => {
         switch (status) {
-            case 'Healthy': return { background: '#10b98115', color: '#10b981' };
-            case 'Attention': return { background: '#f59e0b15', color: '#f59e0b' };
-            case 'Critical': return { background: '#ef444415', color: '#ef4444' };
-            default: return { background: '#64748b15', color: '#64748b' };
+            case 'Healthy': return { background: 'var(--success-bg)', color: 'var(--success-color)' };
+            case 'Attention': return { background: 'var(--warning-bg)', color: 'var(--warning-color)' };
+            case 'Critical': return { background: 'var(--danger-bg)', color: 'var(--danger-color)' };
+            default: return { background: 'var(--hover-bg)', color: 'var(--text-secondary)' };
         }
     };
 
@@ -138,7 +138,7 @@ const Clusters = () => {
                 <div className="stat-card">
                     <h3>Active Centers</h3>
                     <div className="stat-value">30</div>
-                    <div style={{ color: '#10b981', fontSize: '0.8rem', marginTop: '0.5rem', fontWeight: '600' }}>↑ 100% Operational</div>
+                    <div style={{ color: 'var(--success-color)', fontSize: '0.8rem', marginTop: '0.5rem', fontWeight: '600' }}>↑ 100% Operational</div>
                 </div>
                 <div className="stat-card">
                     <h3>Peak Efficiency</h3>
@@ -175,9 +175,9 @@ const Clusters = () => {
                             {filteredClusters.length > 0 ? (
                                 filteredClusters.map(cluster => (
                                     <tr key={cluster.id}>
-                                        <td className="font-medium">
+                                         <td className="font-medium">
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                <div style={{ padding: '8px', background: 'rgba(37, 99, 235, 0.1)', color: 'var(--primary-color)', borderRadius: '8px' }}>
+                                                <div style={{ padding: '8px', background: 'var(--info-bg)', color: 'var(--info-color)', borderRadius: '8px' }}>
                                                     <Layers size={16} />
                                                 </div>
                                                 {cluster.name}

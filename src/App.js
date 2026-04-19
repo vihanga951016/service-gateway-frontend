@@ -13,8 +13,10 @@ import ServiceCenters from './pages/ServiceCenters';
 import ServiceCenter from './pages/ServiceCenter';
 import Services from './pages/Services';
 import Clusters from './pages/Clusters';
+import Calendar from './pages/Calendar';
 import Jobs from './pages/Jobs';
 import JobDetail from './pages/JobDetail';
+import BranchDashboard from './pages/BranchDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ThemeProvider } from './context/ThemeContext';
 import './App.css';
@@ -34,6 +36,7 @@ function App() {
           }>
             <Route index element={<Navigate to="/login" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
+            <Route path="branch-dashboard" element={<BranchDashboard />} />
             <Route path="jobs" element={<Jobs />} />
             <Route path="jobs/:id" element={<JobDetail />} />
             <Route path="user-profile" element={<UserProfile />} />
@@ -44,6 +47,7 @@ function App() {
             <Route path="service-centers/:id" element={<ServiceCenter />} />
             <Route path="services" element={<Services />} />
             <Route path="clusters" element={<Clusters />} />
+            <Route path="calendar" element={<Calendar />} />
             {/* Settings route removed as it uses Modal now */}
           </Route>
         </Routes>

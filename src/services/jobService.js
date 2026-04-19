@@ -31,37 +31,6 @@ export const prepareJob = async (jobData) => {
         throw error;
     }
 };
-
-/**
- * Create a new job
- * @param {Object} jobData - The job details
- * @returns {Promise<Object>} Created job data
- */
-export const createJob = async (jobData) => {
-    try {
-        const baseUrl = getConfig().baseUrl;
-        const token = localStorage.getItem('token');
-
-        if (!token) {
-            throw new Error('No authentication token found');
-        }
-
-        const response = await axios.post(`${baseUrl}/jobs/add`, jobData, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-
-        if (response.data && response.data.code === 0) {
-            return response.data.data;
-        } else {
-            throw new Error(response.data.message || 'Failed to create job');
-        }
-    } catch (error) {
-        console.error('Failed to create job:', error);
-        throw error;
-    }
-};
 /**
  * Remove a dummy job and customer entity
  * @param {string|number} jobId - The job ID
@@ -125,6 +94,68 @@ export const getJobSchedule = async (serviceCenter, date) => {
         }
     } catch (error) {
         console.error('Failed to fetch job schedule:', error);
+        throw error;
+    }
+};
+
+/**
+ * Get full details of a specific job including sub-job timeline
+ * @param {string|number} jobId - The job ID
+ * @returns {Promise<Object>} JobDetails object
+ */
+export const getJobDetails = async (jobId) => {
+    try {
+        const baseUrl = getConfig().baseUrl;
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await axios.get(`${baseUrl}/jobs/${jobId}/details`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (response.data && response.data.code === 0) {
+            return response.data.data;
+        } else {
+            throw new Error(response.data.message || 'Failed to fetch job details');
+        }
+    } catch (error) {
+        console.error('Failed to fetch job details:', error);
+        throw error;
+    }
+};
+
+/**
+ * Verify a newly created job
+ * @param {string|number} jobId - The job ID
+ * @returns {Promise<Object>} Verification status
+ */
+export const verifyJob = async (jobId) => {
+    try {
+        const baseUrl = getConfig().baseUrl;
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await axios.put(`${baseUrl}/jobs/${jobId}/verify`, {}, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (response.data && response.data.code === 0) {
+            return response.data;
+        } else {
+            throw new Error(response.data.message || 'Failed to verify job');
+        }
+    } catch (error) {
+        console.error('Failed to verify job:', error);
         throw error;
     }
 };

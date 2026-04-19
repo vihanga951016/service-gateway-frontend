@@ -8,6 +8,15 @@
   --text-primary: #334155;
   --text-secondary: #64748b;
   --danger-color: #ef4444;
+  --danger-bg: rgba(239, 68, 68, 0.1);
+  --success-color: #10b981;
+  --success-bg: rgba(16, 185, 129, 0.1);
+  --warning-color: #f59e0b;
+  --warning-bg: rgba(245, 158, 11, 0.1);
+  --info-color: #3b82f6;
+  --info-bg: rgba(59, 130, 246, 0.1);
+  --purple-color: #8b5cf6;
+  --purple-bg: rgba(139, 92, 246, 0.1);
   --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --border-color: #e2e8f0;
   --modal-bg: #ffffff;
@@ -25,10 +34,20 @@
   --header-bg: #1e293b;
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
+  --danger-color: #f87171;
+  --danger-bg: rgba(248, 113, 113, 0.15);
+  --success-color: #34d399;
+  --success-bg: rgba(52, 211, 153, 0.15);
+  --warning-color: #fbbf24;
+  --warning-bg: rgba(251, 191, 36, 0.15);
+  --info-color: #60a5fa;
+  --info-bg: rgba(96, 165, 250, 0.15);
+  --purple-color: #a78bfa;
+  --purple-bg: rgba(167, 139, 250, 0.15);
   --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.2);
   --border-color: #334155;
   --modal-bg: #1e293b;
-  --hover-bg: rgba(255, 255, 255, 0.1);
+  --hover-bg: rgba(255, 255, 255, 0.05);
   --scrollbar-track: #0f172a;
   --scrollbar-thumb: #334155;
   --scrollbar-thumb-hover: #475569;
@@ -1034,6 +1053,17 @@ body {
   border-color: #393fe331;
 }
 
+.kanban-card-verifing {
+  border-left: 4px solid #f52a0b;
+  background: rgba(245, 42, 11, 0.05);
+}
+
+
+.kanban-card-verifing:hover {
+  border-color: #f52a0b;
+  border-left: 4px solid #f52a0b;
+}
+
 .kanban-card-pending {
   border-left: 4px solid #f59e0b;
   background: rgba(245, 158, 11, 0.05);
@@ -1076,6 +1106,26 @@ body {
   align-items: center;
   gap: 0.375rem;
   margin-bottom: 0.75rem;
+}
+
+.kanban-card-id-verifing {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #f52a0b;
+  background: rgba(245, 42, 11, 0.1);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-bottom: 2px;
+  width: fit-content;
+  transition: all 0.2s;
+}
+
+.kanban-card-id-verifing:hover {
+  background: rgba(245, 42, 11, 0.1);
+  transform: scale(1.05);
 }
 
 .kanban-card-id-pending {
