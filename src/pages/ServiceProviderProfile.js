@@ -145,14 +145,14 @@ const ServiceProviderProfile = () => {
                     <p className="subtitle">Manage provider details and service centers</p>
                 </div>
                 <div className="header-actions">
-                    <button className="primary-btn" onClick={handleEditClick}>
+                    <button className="primary-btn edit-provider-btn" onClick={handleEditClick}>
                         <Edit2 size={18} />
                         <span>Edit Profile</span>
                     </button>
                 </div>
             </div>
 
-            <div className="profile-layout" style={{ maxWidth: '1600px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'minmax(350px, 1fr) 2.5fr', gap: '1.5rem' }}>
+            <div className="profile-layout">
 
                 {/* Left Column: Provider Identity */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -237,7 +237,7 @@ const ServiceProviderProfile = () => {
                             </h4>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
+                        <div className="centers-grid">
                             {centersLoading ? (
                                 <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem' }}>
                                     <div className="loader small"></div>
@@ -281,7 +281,7 @@ const ServiceProviderProfile = () => {
             {/* Edit Profile Modal */}
             {isEditing && (
                 <div className="modal-overlay" onClick={() => setIsEditing(false)}>
-                    <div className="modal-content" style={{ maxWidth: '700px' }} onClick={(e) => e.stopPropagation()}>
+                    <div className="modal-content profile-edit-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <h3>Edit Provider Details</h3>
                             <button className="close-btn" onClick={() => setIsEditing(false)}>
@@ -290,7 +290,7 @@ const ServiceProviderProfile = () => {
                         </div>
                         <form onSubmit={handleSave}>
                             <div className="modal-body">
-                                <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                <div className="form-grid">
 
                                     {/* Company Name */}
                                     <div className="input-group" style={{ gridColumn: 'span 2' }}>

@@ -1,16 +1,19 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Shield, MapPin, Briefcase, ClipboardList, Layers, Calendar } from 'lucide-react';
+import { LayoutDashboard, Users, Shield, MapPin, Briefcase, ClipboardList, Layers, Calendar, X } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, onClose }) => {
     const { hasPermission, loading } = useUser();
 
     if (loading) {
         return (
-            <aside className="sidebar">
+            <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
                 <div className="sidebar-header">
                     <img src="/logo512.png" alt="Service Gateway Logo" className="sidebar-logo" />
+                    {/* <button className="sidebar-close" onClick={onClose}>
+                        <X size={24} />
+                    </button> */}
                 </div>
                 <div className="sidebar-nav" style={{ padding: '20px', textAlign: 'center' }}>
                     Loading...
@@ -20,14 +23,18 @@ const Sidebar = () => {
     }
 
     return (
-        <aside className="sidebar">
+        <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
             <div className="sidebar-header">
                 <img src="/logo512.png" alt="Service Gateway Logo" className="sidebar-logo" />
+                {/* <button className="sidebar-close" onClick={onClose}>
+                    <X size={24} />
+                </button> */}
             </div>
             <nav className="sidebar-nav">
                 <NavLink
                     to="/dashboard"
                     className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                    onClick={() => window.innerWidth < 1024 && onClose()}
                 >
                     <LayoutDashboard size={20} />
                     <span>Dashboard</span>
@@ -36,6 +43,7 @@ const Sidebar = () => {
                 <NavLink
                     to="/jobs"
                     className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                    onClick={() => window.innerWidth < 1024 && onClose()}
                 >
                     <ClipboardList size={20} />
                     <span>Jobs</span>
@@ -45,6 +53,7 @@ const Sidebar = () => {
                     <NavLink
                         to="/users"
                         className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                        onClick={() => window.innerWidth < 1024 && onClose()}
                     >
                         <Users size={20} />
                         <span>Users</span>
@@ -55,6 +64,7 @@ const Sidebar = () => {
                     <NavLink
                         to="/roles"
                         className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                        onClick={() => window.innerWidth < 1024 && onClose()}
                     >
                         <Shield size={20} />
                         <span>Roles</span>
@@ -65,6 +75,7 @@ const Sidebar = () => {
                     <NavLink
                         to="/service-centers"
                         className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                        onClick={() => window.innerWidth < 1024 && onClose()}
                     >
                         <MapPin size={20} />
                         <span>Centers</span>
@@ -75,6 +86,7 @@ const Sidebar = () => {
                     <NavLink
                         to="/services"
                         className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                        onClick={() => window.innerWidth < 1024 && onClose()}
                     >
                         <Briefcase size={20} />
                         <span>Services</span>
@@ -85,6 +97,7 @@ const Sidebar = () => {
                     <NavLink
                         to="/clusters"
                         className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                        onClick={() => window.innerWidth < 1024 && onClose()}
                     >
                         <Layers size={20} />
                         <span>Clusters</span>
@@ -95,6 +108,7 @@ const Sidebar = () => {
                     <NavLink
                         to="/calendar"
                         className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                        onClick={() => window.innerWidth < 1024 && onClose()}
                     >
                         <Calendar size={20} />
                         <span>Calendar</span>

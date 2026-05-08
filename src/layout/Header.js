@@ -1,13 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Bell, UserCircle, User, Settings, LogOut, Building } from 'lucide-react';
+import { Bell, UserCircle, User, Settings, LogOut, Building, Menu } from 'lucide-react';
 import SettingsModal from '../components/SettingsModal';
 import { getConfig } from '../config';
 import { toast } from 'react-toastify';
 import { useUser } from '../context/UserContext';
 
-const Header = () => {
+const Header = ({ toggleSidebar }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const { userInfo, loading: isLoadingUserData } = useUser();
@@ -71,8 +71,11 @@ const Header = () => {
     return (
         <>
             <header className="header">
-                <div className="header-left" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <h2 style={{ margin: 0 }}>{userInfo.provider}</h2>
+                <div className="header-left">
+                    <button className="menu-toggle" onClick={toggleSidebar}>
+                        <Menu size={24} />
+                    </button>
+                    <h2 className="header-title">{userInfo.provider}</h2>
                     <span className="badge-pill">{userInfo.providerId}</span>
                 </div>
                 <div className="header-right">

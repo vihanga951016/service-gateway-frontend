@@ -269,7 +269,7 @@ const UserProfile = () => {
                 </div>
             </div>
 
-            <div className="profile-layout" style={{ maxWidth: '1800px', margin: '0 auto', display: 'grid', gridTemplateColumns: '300px 1fr', gap: '1.5rem' }}>
+            <div className="profile-layout">
 
                 {/* Left Column: Identity Card */}
                 <div className="content-card" style={{ padding: '0', overflow: 'hidden', textAlign: 'center' }}>
@@ -356,7 +356,7 @@ const UserProfile = () => {
                         Personal Information
                     </h4>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                    <div className="info-grid">
                         {user.email ? (
                             <div className="detail-group">
                                 <label style={{ color: '#94a3b8', fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Email Address</label>
@@ -427,7 +427,7 @@ const UserProfile = () => {
             {/* Edit Profile Modal */}
             {isEditing && (
                 <div className="modal-overlay" onClick={() => setIsEditing(false)}>
-                    <div className="modal-content" style={{ maxWidth: '600px' }} onClick={(e) => e.stopPropagation()}>
+                    <div className="modal-content profile-edit-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <h3>Edit Profile</h3>
                             <button className="close-btn" onClick={() => setIsEditing(false)}>
@@ -436,7 +436,7 @@ const UserProfile = () => {
                         </div>
                         <form onSubmit={handleSave}>
                             <div className="modal-body">
-                                <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                <div className="form-grid">
                                     {/* First Name */}
                                     <div className="input-group">
                                         <User className="input-icon" size={18} />

@@ -347,7 +347,6 @@ body {
   flex-direction: column;
   flex-shrink: 0;
   height: 100%;
-  overflow-y: auto;
   transition: width var(--transition-speed);
 }
 
@@ -386,6 +385,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  overflow-y: auto;
 }
 
 .nav-item {
@@ -451,6 +451,31 @@ body {
   padding: 0 2rem;
   box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   z-index: 10;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  transition: background-color var(--transition-speed);
+}
+
+.menu-toggle:hover {
+  background-color: var(--hover-bg);
+}
+
+.sidebar-close {
+  display: none;
 }
 
 .header h2 {
@@ -595,6 +620,26 @@ body {
 
 .dropdown-item:hover {
   background-color: var(--hover-bg);
+}
+
+.profile-layout {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  gap: 1.5rem;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.centers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
 }
 
 .dropdown-divider {
@@ -1800,11 +1845,191 @@ body {
   }
 }
 
+@media (max-width: 1024px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+
+    z-index: 1000;
+
+    transform: translateY(-100%);
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+    overflow-y: auto;
+  }
+
+  .sidebar.open {
+    transform: translateY(0);
+  }
+
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    backdrop-filter: blur(2px);
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  .sidebar-header {
+    position: relative;
+    padding-top: 2.25rem;
+    /* pt-3 (0.75rem) + original padding (1.5rem) */
+  }
+
+  .sidebar-close {
+    display: flex;
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 0.4rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+  }
+
+  .sidebar-close:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    transform: scale(1.05);
+  }
+
+  .profile-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .centers-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .main-content {
+    width: 100%;
+  }
+
+  .menu-toggle {
+    display: flex;
+  }
+
+  .header {
+    padding: 0 1rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem;
+  }
+
+  .form-grid>* {
+    grid-column: span 1 !important;
+  }
+
+  .modal-content {
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    width: 95%;
+    margin: 1rem;
+    overflow: hidden;
+  }
+
+  .modal-header {
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--modal-bg);
+    z-index: 10;
+  }
+
+  .modal-content form {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .modal-body {
+    overflow-y: visible;
+    flex: none;
+    padding: 1.5rem;
+  }
+
+  .modal-footer {
+    flex-shrink: 0;
+    padding: 1rem 1.5rem;
+    background-color: var(--modal-bg);
+    border-top: 1px solid var(--border-color);
+    z-index: 10;
+  }
+}
+
 @media (max-width: 768px) {
+  .login-card {
+    padding: 2rem;
+    max-width: 380px;
+  }
+
+  .login-logo {
+    width: 240px;
+  }
+
+
+  .register-modal.expanded {
+    max-width: 90%;
+    margin: 1rem;
+  }
+
   .page-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
+  }
+
+  .header-actions {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .modal-footer {
+    flex-direction: column-reverse;
+    width: 100%;
+    padding: 1.5rem;
+    gap: 0.75rem;
+  }
+
+  .modal-footer button {
+    width: 100%;
+    padding: 0.875rem;
+    font-weight: 600;
+    justify-content: center;
+    border-radius: 0.75rem;
+  }
+
+  .modal-footer .primary-btn {
+    order: 2;
+    background: linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  }
+
+  .modal-footer .secondary-btn {
+    order: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .table-toolbar {
@@ -1848,14 +2073,85 @@ body {
     flex-direction: column;
   }
 
-  .sidebar {
-    width: 100%;
-    height: auto;
-    max-height: 300px;
-  }
 }
 
 @media (max-width: 480px) {
+  .profile-name {
+    display: none;
+  }
+
+  .header-title {
+    font-size: 1rem;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .header-left {
+    gap: 4px;
+  }
+
+  .login-container {
+    padding: 1rem;
+    align-items: flex-start;
+    padding-top: 5vh;
+  }
+
+  .login-card {
+    padding: 1.5rem;
+    max-width: 100%;
+    margin: 0;
+  }
+
+  .login-logo {
+    width: 180px;
+    height: auto;
+  }
+
+  .login-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .login-btn {
+    padding: 0.75rem;
+  }
+
+  .modal-content {
+    width: 95%;
+    margin: 0.5rem;
+  }
+
+  .modal-body {
+    padding: 1rem;
+  }
+
+  .modal-footer {
+    flex-direction: row !important;
+    overflow-x: auto;
+    white-space: nowrap;
+    justify-content: flex-start !important;
+    padding: 1rem 1.5rem !important;
+    gap: 0.75rem !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .modal-footer::-webkit-scrollbar {
+    display: none;
+  }
+
+  .modal-footer button {
+    width: auto !important;
+    flex: 0 0 auto;
+    min-width: 140px;
+    padding: 0.75rem 1.25rem !important;
+  }
+
+  .form-section h4 {
+    font-size: 0.8rem;
+  }
+
   .kanban-column-header {
     padding-bottom: 0.5rem;
   }
