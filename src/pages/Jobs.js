@@ -7,6 +7,7 @@ import CreateJobModal from '../components/CreateJobModal';
 import '../App.css';
 import { toast } from 'react-toastify';
 import Tooltip from '@mui/material/Tooltip';
+import { Skeleton, Box } from '@mui/material';
 
 const Jobs = () => {
     const location = useLocation();
@@ -20,10 +21,12 @@ const Jobs = () => {
     const [jobsList, setJobsList] = useState([]);
     const [isLoadingPoints, setIsLoadingPoints] = useState(false);
     const [isLoadingJobs, setIsLoadingJobs] = useState(false);
+    const [isLoadingCenters, setIsLoadingCenters] = useState(true);
     const [highlightedJobId, setHighlightedJobId] = useState(null);
 
     React.useEffect(() => {
         const fetchCenters = async () => {
+            setIsLoadingCenters(true);
             try {
                 const data = await getServiceCenterDropdown();
                 setCenters(data || []);
@@ -41,6 +44,8 @@ const Jobs = () => {
                 } else {
                     toast.error('Network error');
                 }
+            } finally {
+                setIsLoadingCenters(false);
             }
         };
         fetchCenters();
@@ -183,6 +188,15 @@ const Jobs = () => {
             </div>
 
             <div className="content-card">
+                {isLoadingCenters ? (
+                    <div className="table-toolbar">
+                        <div className="toolbar-filters" style={{ width: '100%', display: 'flex', gap: '1rem', padding: '0.5rem 0', flexWrap: 'wrap' }}>
+                            <Skeleton variant="rounded" sx={{ flex: '1 1 200px', height: 42, borderRadius: 2 }} animation="wave" />
+                            <Skeleton variant="rounded" sx={{ flex: '1 1 150px', maxWidth: { sm: '250px' }, height: 42, borderRadius: 2 }} animation="wave" />
+                            <Skeleton variant="rounded" sx={{ flex: '1 1 120px', maxWidth: { sm: '200px' }, height: 42, borderRadius: 2 }} animation="wave" />
+                        </div>
+                    </div>
+                ) : (
                 <div className="table-toolbar">
                     <div className="toolbar-filters">
                         <div className="search-bar-wrapper">
@@ -226,12 +240,33 @@ const Jobs = () => {
                         </div>
                     </div>
                 </div>
+                )}
 
                 <div className="kanban-board">
                     {isLoadingPoints || isLoadingJobs ? (
-                        <div style={{ display: 'flex', justifyContent: 'center', width: '100%', padding: '3rem' }}>
-                            <div className="spinner"></div>
-                        </div>
+                        <Box sx={{ display: 'flex', gap: '1rem', width: '100%', overflowX: 'hidden', padding: '0.5rem' }}>
+                            {Array.from(new Array(4)).map((_, i) => (
+                                <div key={i} className="kanban-column" style={{ minWidth: '280px', flex: '1 1 auto' }}>
+                                    <div className="kanban-column-header">
+                                        <div className="kanban-column-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <Skeleton variant="circular" width={16} height={16} />
+                                            <Skeleton variant="text" width={120} height={20} />
+                                        </div>
+                                        <Skeleton variant="rounded" width={24} height={24} sx={{ borderRadius: '12px' }} />
+                                    </div>
+                                    <div className="kanban-cards-container">
+                                        {Array.from(new Array(3)).map((_, j) => (
+                                            <Skeleton 
+                                                key={j} 
+                                                variant="rounded" 
+                                                height={100} 
+                                                sx={{ mb: 2, borderRadius: '0.75rem' }} 
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </Box>
                     ) : servicePoints.length > 0 ? (
                         servicePoints.map(point => {
                             const pointJobs = getJobsForPoint(point.name);
@@ -376,7 +411,7 @@ const Jobs = () => {
                             );
                         })
                     ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '5rem', gap: '1rem', color: 'var(--text-secondary)' }}>
+                        <div className="empty-state-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '3rem 1rem', gap: '1rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
                             <Building size={48} opacity={0.3} />
                             <p>No service points available for this center</p>
                         </div>

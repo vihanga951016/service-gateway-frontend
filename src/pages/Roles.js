@@ -7,6 +7,7 @@ import { getConfig } from '../config';
 import RoleModal from '../components/RoleModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import '../App.css';
+import { Skeleton } from '@mui/material';
 
 const Roles = () => {
     const navigate = useNavigate();
@@ -159,11 +160,32 @@ const Roles = () => {
                     </thead>
                     <tbody>
                         {isLoadingRoles ? (
-                            <tr>
-                                <td colSpan="3" className="text-center" style={{ padding: '2rem' }}>
-                                    <div style={{ color: 'var(--text-secondary)' }}>Loading roles...</div>
-                                </td>
-                            </tr>
+                            Array.from(new Array(5)).map((_, i) => (
+                                <tr key={i}>
+                                    <td style={{ width: '25%' }}>
+                                        <div className="role-cell">
+                                            <Skeleton variant="circular" width={16} height={16} sx={{ flexShrink: 0, bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                            <Skeleton variant="text" width={i % 2 === 0 ? "80%" : "60%"} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div className="permissions-list mobile-hidden">
+                                            <Skeleton variant="rounded" width={50} height={24} sx={{ borderRadius: '12px', bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                            <Skeleton variant="rounded" width={80} height={24} sx={{ borderRadius: '12px', bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                            <Skeleton variant="rounded" width={60} height={24} sx={{ borderRadius: '12px', bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                        </div>
+                                        <div className="desktop-hidden" style={{ alignItems: 'center' }}>
+                                            <Skeleton variant="rounded" width={100} height={24} sx={{ borderRadius: '12px', bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div className="action-buttons justify-end">
+                                            <Skeleton variant="circular" width={32} height={32} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                            <Skeleton variant="circular" width={32} height={32} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))
                         ) : roles.length === 0 ? (
                             <tr>
                                 <td colSpan="3" className="text-center" style={{ padding: '2rem' }}>
@@ -175,15 +197,20 @@ const Roles = () => {
                                 <tr key={role.id}>
                                     <td style={{ width: '25%' }}>
                                         <div className="role-cell">
-                                            <Shield size={16} className="text-secondary" />
+                                            <Shield size={16} className="text-secondary" style={{ flexShrink: 0 }} />
                                             <span className="font-medium">{role.name}</span>
                                         </div>
                                     </td>
                                     <td>
-                                        <div className="permissions-list">
+                                        <div className="permissions-list mobile-hidden">
                                             {role.permissions.map((perm, index) => (
                                                 <span key={index} className="badge-pill">{perm}</span>
                                             ))}
+                                        </div>
+                                        <div className="desktop-hidden" style={{ alignItems: 'center' }}>
+                                            <span className="badge-pill" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#60a5fa' }}>
+                                                {role.permissions.length}
+                                            </span>
                                         </div>
                                     </td>
                                     <td>

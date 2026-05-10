@@ -123,16 +123,16 @@ const ServiceCenterModal = ({ isOpen, onClose, onSave, initialData, isViewOnly =
 
     return (
         <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 'min(500px, 95vw)', width: '100%' }}>
                 <div className="modal-header">
                     <h3>{isViewOnly ? 'View Service Center' : (initialData ? 'Edit Service Center' : 'Add New Service Center')}</h3>
                     <button className="close-btn" onClick={onClose}>
                         <X size={20} />
                     </button>
                 </div>
-                <div className="modal-body">
+                <div className="modal-body" style={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' }}>
                     <form onSubmit={handleSubmit}>
-                        <div className="form-grid" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
                             {/* Name */}
                             <div className="input-group">
@@ -178,9 +178,9 @@ const ServiceCenterModal = ({ isOpen, onClose, onSave, initialData, isViewOnly =
                             {/* Type (Removed) */}
 
                             {/* Opening Hours */}
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                            <div className="form-grid-2">
                                 <div>
-                                    <label style={{ fontSize: '0.85rem', color: '#666', marginBottom: '0.25rem', display: 'block' }}>Open Time</label>
+                                    <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', display: 'block' }}>Open Time</label>
                                     <div className="input-group">
                                         <Clock className="input-icon" size={18} />
                                         <input
@@ -195,7 +195,7 @@ const ServiceCenterModal = ({ isOpen, onClose, onSave, initialData, isViewOnly =
                                     </div>
                                 </div>
                                 <div>
-                                    <label style={{ fontSize: '0.85rem', color: '#666', marginBottom: '0.25rem', display: 'block' }}>Close Time</label>
+                                    <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', display: 'block' }}>Close Time</label>
                                     <div className="input-group">
                                         <Clock className="input-icon" size={18} />
                                         <input

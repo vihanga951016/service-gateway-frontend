@@ -125,14 +125,14 @@ const ServiceModal = ({ isOpen, onClose, onSave, initialData, isViewOnly = false
 
     return (
         <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ width: 'min(500px, 95vw)' }}>
                 <div className="modal-header">
                     <h3>{isViewOnly ? 'View Service' : (initialData ? 'Edit Service' : 'Add New Service')}</h3>
                     <button className="close-btn" onClick={onClose}>
                         <X size={20} />
                     </button>
                 </div>
-                <div className="modal-body">
+                <div className="modal-body" style={{ maxHeight: '75vh', overflowY: 'auto', paddingRight: '0.5rem' }}>
                     <form onSubmit={handleSubmit}>
                         <div className="form-grid" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                             <div className="input-group">
@@ -234,7 +234,7 @@ const ServiceModal = ({ isOpen, onClose, onSave, initialData, isViewOnly = false
                             </div> */}
 
                             <label style={{ display: 'block', marginBottom: '4px' }}>Prices</label>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                            <div className="form-grid-2">
                                 {!formData.totalPriceDepends && (
                                     <div className="input-group">
                                         <DollarSign className="input-icon" size={18} />
@@ -247,9 +247,9 @@ const ServiceModal = ({ isOpen, onClose, onSave, initialData, isViewOnly = false
                                             required={!formData.totalPriceDepends}
                                             disabled={isViewOnly}
                                         />
-                                    </div>
-                                )}
-                                <div className="input-group" style={{ gridColumn: formData.totalPriceDepends ? 'span 2' : 'auto' }}>
+                                </div>
+                            )}
+                            <div className="input-group" style={{ gridColumn: 'auto' }}>
                                     <Coins className="input-icon" size={18} />
                                     <input
                                         type="number"

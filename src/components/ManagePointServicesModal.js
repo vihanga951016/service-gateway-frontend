@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Briefcase, Plus, Trash2, Search, Clock, Loader2 } from 'lucide-react';
+import { Skeleton } from '@mui/material';
 import { toast } from 'react-toastify';
 import { getAvailableServicesForPoint, getAssignedServicesForPoint, assignServiceToPoint, unassignServiceFromPoint } from '../services/serviceProviderService';
 import { useNavigate } from 'react-router-dom';
@@ -133,7 +134,7 @@ const ManagePointServicesModal = ({ isOpen, onClose, servicePoint, assignedServi
 
     return (
         <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '900px', maxHeight: '90vh' }}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 'min(900px, 95vw)', width: '100%', maxHeight: '95vh' }}>
                 <div className="modal-header">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         <Briefcase size={20} className="text-primary" />
@@ -149,8 +150,8 @@ const ManagePointServicesModal = ({ isOpen, onClose, servicePoint, assignedServi
                     </button>
                 </div>
 
-                <div className="modal-body" style={{ padding: '1.5rem', overflowY: 'auto' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                <div className="modal-body" style={{ padding: '1.25rem', overflowY: 'auto', maxHeight: 'calc(100vh - 200px)' }}>
+                    <div className="form-grid-2" style={{ gap: '2rem' }}>
                         {/* Assigned Services Section */}
                         <div>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
@@ -159,8 +160,12 @@ const ManagePointServicesModal = ({ isOpen, onClose, servicePoint, assignedServi
                                 </h4>
                             </div>
 
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '500px', overflowY: 'auto', paddingRight: '0.5rem' }}>
-                                {localAssignedServices.length > 0 ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '400px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+                                {isLoading ? (
+                                    [1, 2, 3].map(i => (
+                                        <Skeleton key={i} variant="rectangular" width="100%" height={80} sx={{ borderRadius: '12px', bgcolor: 'rgba(255,255,255,0.05)' }} />
+                                    ))
+                                ) : localAssignedServices.length > 0 ? (
                                     localAssignedServices.map((service, index) => (
                                         <div
                                             key={service.id}
@@ -172,7 +177,9 @@ const ManagePointServicesModal = ({ isOpen, onClose, servicePoint, assignedServi
                                                 display: 'flex',
                                                 justifyContent: 'space-between',
                                                 alignItems: 'center',
-                                                transition: 'all 0.2s'
+                                                transition: 'all 0.2s',
+                                                flexWrap: 'wrap',
+                                                gap: '0.5rem'
                                             }}
                                         >
                                             <div style={{ flex: 1 }}>
@@ -267,18 +274,11 @@ const ManagePointServicesModal = ({ isOpen, onClose, servicePoint, assignedServi
                                 </div>
                             </div>
 
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '500px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '400px', overflowY: 'auto', paddingRight: '0.5rem' }}>
                                 {isLoading ? (
-                                    <div style={{
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        padding: '3rem',
-                                        background: 'var(--hover-bg)',
-                                        borderRadius: '12px'
-                                    }}>
-                                        <Loader2 className="animate-spin text-primary" size={32} />
-                                    </div>
+                                    [1, 2, 3, 4].map(i => (
+                                        <Skeleton key={i} variant="rectangular" width="100%" height={80} sx={{ borderRadius: '12px', bgcolor: 'rgba(255,255,255,0.05)' }} />
+                                    ))
                                 ) : error ? (
                                     <div style={{
                                         textAlign: 'center',
@@ -310,7 +310,9 @@ const ManagePointServicesModal = ({ isOpen, onClose, servicePoint, assignedServi
                                                 justifyContent: 'space-between',
                                                 alignItems: 'center',
                                                 transition: 'all 0.2s',
-                                                cursor: 'pointer'
+                                                cursor: 'pointer',
+                                                flexWrap: 'wrap',
+                                                gap: '0.5rem'
                                             }}
                                             onMouseEnter={(e) => e.currentTarget.style.background = 'var(--hover-bg)'}
                                             onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}

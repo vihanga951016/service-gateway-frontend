@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Users, Shield, MapPin, Briefcase, ClipboardList, Layers, Calendar, X } from 'lucide-react';
 import { useUser } from '../context/UserContext';
+import { Skeleton } from '@mui/material';
 
 const Sidebar = ({ isOpen, onClose }) => {
     const { hasPermission, loading } = useUser();
@@ -11,13 +12,15 @@ const Sidebar = ({ isOpen, onClose }) => {
             <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
                 <div className="sidebar-header">
                     <img src="/logo512.png" alt="Service Gateway Logo" className="sidebar-logo" />
-                    {/* <button className="sidebar-close" onClick={onClose}>
-                        <X size={24} />
-                    </button> */}
                 </div>
-                <div className="sidebar-nav" style={{ padding: '20px', textAlign: 'center' }}>
-                    Loading...
-                </div>
+                <nav className="sidebar-nav">
+                    {Array.from(new Array(6)).map((_, i) => (
+                        <div key={i} className="nav-item" style={{ cursor: 'default', pointerEvents: 'none' }}>
+                            <Skeleton variant="circular" width={20} height={20} sx={{ bgcolor: 'rgba(255, 255, 255, 0.1)' }} animation="wave" />
+                            <Skeleton variant="text" width={100} height={20} sx={{ bgcolor: 'rgba(255, 255, 255, 0.1)' }} animation="wave" />
+                        </div>
+                    ))}
+                </nav>
             </aside>
         );
     }
@@ -100,7 +103,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                         onClick={() => window.innerWidth < 1024 && onClose()}
                     >
                         <Layers size={20} />
-                        <span>Clusters</span>
+                        <span>Workflows</span>
                     </NavLink>
                 )}
 

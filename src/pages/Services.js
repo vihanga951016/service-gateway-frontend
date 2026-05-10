@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Plus, Search, ChevronLeft, ChevronRight, Briefcase, Clock, DollarSign, Tag, Edit2, Trash2, Eye, Loader2, Info } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { Skeleton } from '@mui/material';
 import ServiceModal from '../components/ServiceModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import InfoModal from '../components/InfoModal';
@@ -265,8 +266,8 @@ const Services = () => {
             </div>
 
             <div className="content-card">
-                <div className="table-toolbar" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', alignItems: 'center' }}>
-                    <div className="search-bar" style={{ position: 'relative', width: '300px' }}>
+                <div className="table-toolbar" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                    <div className="search-bar" style={{ position: 'relative', width: '100%', maxWidth: '300px' }}>
                         <Search size={18} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#666' }} />
                         <input
                             type="text"
@@ -280,8 +281,50 @@ const Services = () => {
                 </div>
 
                 {loading ? (
-                    <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
-                        <Loader2 className="animate-spin text-primary" size={40} />
+                    <div className="table-responsive">
+                        <table className="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Order Number</th>
+                                    <th>Name</th>
+                                    <th className="mobile-hidden">Service Time</th>
+                                    <th className="mobile-hidden">Total Price</th>
+                                    <th className="mobile-hidden">Down Price</th>
+                                    <th className="mobile-hidden">Description</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {Array.from(new Array(5)).map((_, i) => (
+                                    <tr key={i}>
+                                        <td>
+                                            <Skeleton variant="rounded" width={40} height={24} sx={{ borderRadius: '12px', bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                        </td>
+                                        <td>
+                                            <Skeleton variant="text" width="90%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                        </td>
+                                        <td className="mobile-hidden">
+                                            <Skeleton variant="text" width="60%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                        </td>
+                                        <td className="mobile-hidden">
+                                            <Skeleton variant="text" width="70%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                        </td>
+                                        <td className="mobile-hidden">
+                                            <Skeleton variant="text" width="60%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                        </td>
+                                        <td className="mobile-hidden">
+                                            <Skeleton variant="circular" width={24} height={24} sx={{ margin: '0 auto', bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                        </td>
+                                        <td>
+                                            <div className="action-buttons justify-end justify-mobile-center">
+                                                <Skeleton variant="circular" width={32} height={32} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                                <Skeleton variant="circular" width={32} height={32} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} className="mobile-hidden" />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                 ) : (
                     <div className="table-responsive">
@@ -290,10 +333,10 @@ const Services = () => {
                                 <tr>
                                     <th>Order Number</th>
                                     <th>Name</th>
-                                    <th>Service Time</th>
-                                    <th>Total Price</th>
-                                    <th>Down Price</th>
-                                    <th>Description</th>
+                                    <th className="mobile-hidden">Service Time</th>
+                                    <th className="mobile-hidden">Total Price</th>
+                                    <th className="mobile-hidden">Down Price</th>
+                                    <th className="mobile-hidden">Description</th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -305,7 +348,7 @@ const Services = () => {
                                                 <span className="order-number-badge">{service.orderNumber}</span>
                                             </td>
                                             <td className="font-medium">{service.name}</td>
-                                            <td>
+                                            <td className="mobile-hidden">
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                     {service.serviceTimeDepends ? (
                                                         <span className="tag-pill" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.8rem' }}>
@@ -331,7 +374,7 @@ const Services = () => {
                                                     )}
                                                 </div>
                                             </td>
-                                            <td>
+                                            <td className="mobile-hidden">
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                     {service.totalPriceDepends ? (
                                                         <span className="tag-pill" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.8rem' }}>
@@ -342,12 +385,12 @@ const Services = () => {
                                                     )}
                                                 </div>
                                             </td>
-                                            <td>
+                                            <td className="mobile-hidden">
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                     Rs. {service.downPrice ? service.downPrice.toLocaleString() : '0'}
                                                 </div>
                                             </td>
-                                            <td>
+                                            <td className="mobile-hidden">
                                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                     <button
                                                         className="icon-action-btn text-info"
@@ -360,14 +403,14 @@ const Services = () => {
                                                 </div>
                                             </td>
                                             <td>
-                                                <div className="action-buttons justify-end">
+                                                <div className="action-buttons justify-end justify-mobile-center">
                                                     {/* <button className="icon-action-btn text-primary" title="View" onClick={() => handleViewClick(service)}>
                                                         <Eye size={16} />
                                                     </button> */}
                                                     <button className="icon-action-btn" title="Edit" onClick={() => handleEditClick(service)}>
                                                         <Edit2 size={16} />
                                                     </button>
-                                                    <button className="icon-action-btn text-danger" title="Delete" onClick={() => handleDeleteClick(service.id, service.name)}>
+                                                    <button className="icon-action-btn text-danger mobile-hidden" title="Delete" onClick={() => handleDeleteClick(service.id, service.name)}>
                                                         <Trash2 size={16} />
                                                     </button>
                                                 </div>

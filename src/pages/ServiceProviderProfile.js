@@ -4,6 +4,7 @@ import '../App.css';
 import { getServiceProviderProfile, updateServiceProviderProfile, getSummarizedServiceCenters } from '../services/serviceProviderService';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { Skeleton } from '@mui/material';
 
 const ServiceProviderProfile = () => {
     const navigate = useNavigate();
@@ -129,14 +130,6 @@ const ServiceProviderProfile = () => {
         return status === 'Active' || status === 'Opened' ? 'badge-pill badge-success' : 'badge-pill badge-warning';
     };
 
-    if (loading) {
-        return (
-            <div className="page-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
-                <div className="loader"></div>
-            </div>
-        );
-    }
-
     return (
         <div className="page-container">
             <div className="page-header">
@@ -174,35 +167,61 @@ const ServiceProviderProfile = () => {
                                 color: 'white',
                                 boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.3)'
                             }}>
-                                <Building size={64} />
+                                {!loading && <Building size={64} />}
                             </div>
 
-                            <h2 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>{provider.name}</h2>
-                            <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
-                                <span className={getCenterStatusBadgeClass(provider.status)}>{provider.status}</span>
-                                <span className="badge-pill bg-dark-lighter text-muted">{provider.regNo}</span>
-                            </div>
+                            {loading ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                    <Skeleton variant="text" width="60%" height={40} sx={{ mb: 1, bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        <Skeleton variant="rounded" width={80} height={24} sx={{ borderRadius: '12px', bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                        <Skeleton variant="rounded" width={100} height={24} sx={{ borderRadius: '12px', bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    <h2 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>{provider.name}</h2>
+                                    <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
+                                        <span className={getCenterStatusBadgeClass(provider.status)}>{provider.status}</span>
+                                        <span className="badge-pill bg-dark-lighter text-muted">{provider.regNo}</span>
+                                    </div>
+                                </>
+                            )}
 
                             <div style={{ textAlign: 'left', background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '1rem' }}>
                                 <div className="detail-group">
-                                    <label style={{ color: '#94a3b8', fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Contact Information</label>
+                                    {!loading ?
+                                        <label style={{ color: '#94a3b8', fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Contact Information</label>
+                                        : null}
+
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.95rem' }}>
-                                            <Mail size={16} className="text-primary" style={{ flexShrink: 0 }} />
-                                            {provider.email}
-                                        </div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.95rem' }}>
-                                            <Phone size={16} className="text-primary" style={{ flexShrink: 0 }} />
-                                            {provider.contact}
-                                        </div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.95rem' }}>
-                                            <Globe size={16} className="text-primary" style={{ flexShrink: 0 }} />
-                                            {provider.website}
-                                        </div>
-                                        <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem', fontSize: '0.95rem' }}>
-                                            <MapPin size={16} className="text-primary" style={{ marginTop: '3px', flexShrink: 0 }} />
-                                            {provider.address}
-                                        </div>
+                                        {loading ? (
+                                            <>
+                                                <Skeleton variant="text" width="90%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                                <Skeleton variant="text" width="80%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                                <Skeleton variant="text" width="85%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                                <Skeleton variant="text" width="95%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.95rem' }}>
+                                                    <Mail size={16} className="text-primary" style={{ flexShrink: 0 }} />
+                                                    {provider.email}
+                                                </div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.95rem' }}>
+                                                    <Phone size={16} className="text-primary" style={{ flexShrink: 0 }} />
+                                                    {provider.contact}
+                                                </div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.95rem' }}>
+                                                    <Globe size={16} className="text-primary" style={{ flexShrink: 0 }} />
+                                                    {provider.website}
+                                                </div>
+                                                <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem', fontSize: '0.95rem' }}>
+                                                    <MapPin size={16} className="text-primary" style={{ marginTop: '3px', flexShrink: 0 }} />
+                                                    {provider.address}
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -215,34 +234,61 @@ const ServiceProviderProfile = () => {
 
                     {/* Overview Card */}
                     <div className="content-card">
-                        <h4 className="card-title">
-                            <Shield className="text-primary" size={20} style={{ marginRight: '0.5rem' }} />
-                            About Provider
-                        </h4>
-                        <p style={{ color: '#cbd5e1', lineHeight: '1.6' }}>{provider.description}</p>
-                        <div style={{ display: 'flex', gap: '2rem', marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-                            <div>
-                                <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Active Since</div>
-                                <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{provider.joinDate}</div>
-                            </div>
-                        </div>
+
+                        {loading ? (
+                            <>
+                                <Skeleton variant="text" width="100%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                <Skeleton variant="text" width="90%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                <Skeleton variant="text" width="80%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                <div style={{ display: 'flex', gap: '2rem', marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                                    <div>
+                                        {/* <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Active Since</div> */}
+                                        <Skeleton variant="text" width={120} height={32} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <h4 className="card-title">
+                                    <Shield className="text-primary" size={20} style={{ marginRight: '0.5rem' }} />
+                                    About Provider
+                                </h4>
+                                <p style={{ color: '#cbd5e1', lineHeight: '1.6' }}>{provider.description}</p>
+                                <div style={{ display: 'flex', gap: '2rem', marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                                    <div>
+                                        <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Active Since</div>
+                                        <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{provider.joinDate}</div>
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
 
                     {/* Service Centers Grid */}
                     <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                            <h4 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <MapPin size={20} className="text-success" />
-                                Service Centers
-                            </h4>
-                        </div>
+                        {!centersLoading ?
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                <h4 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <MapPin size={20} className="text-success" />
+                                    Service Centers
+                                </h4>
+                            </div>
+                            : null}
 
                         <div className="centers-grid">
                             {centersLoading ? (
-                                <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem' }}>
-                                    <div className="loader small"></div>
-                                    <p style={{ marginTop: '0.5rem', color: '#94a3b8' }}>Loading centers...</p>
-                                </div>
+                                Array.from(new Array(4)).map((_, i) => (
+                                    <div key={i} className="content-card" style={{ marginBottom: 0 }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '1rem' }}>
+                                            <Skeleton variant="text" width="50%" height={24} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                            <Skeleton variant="rounded" width="20%" height={20} sx={{ borderRadius: '12px', bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                        </div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                            <Skeleton variant="text" width="80%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                            <Skeleton variant="text" width="60%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                        </div>
+                                    </div>
+                                ))
                             ) : serviceCenters.length > 0 ? (
                                 serviceCenters.map(center => (
                                     <div key={center.id} className="content-card" style={{

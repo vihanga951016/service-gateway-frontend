@@ -25,7 +25,7 @@ import {
     TimelineDot,
     timelineItemClasses
 } from '@mui/lab';
-import { Typography, Box, CircularProgress } from '@mui/material';
+import { Typography, Box, CircularProgress, Skeleton } from '@mui/material';
 import '../App.css';
 import { getJobDetails } from '../services/jobService';
 import Tooltip from '@mui/material/Tooltip';
@@ -100,8 +100,61 @@ const JobDetail = () => {
 
     if (loading) {
         return (
-            <div className="page-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '300px' }}>
-                <CircularProgress size={32} />
+            <div className="page-container">
+                <div className="page-header job-page-header">
+                    <div className="job-page-header-content">
+                        <Skeleton variant="circular" width={40} height={40} />
+                        <div>
+                            <Skeleton variant="text" width={200} height={32} />
+                            <Skeleton variant="text" width={100} height={20} />
+                        </div>
+                    </div>
+                    <Skeleton variant="rounded" width={100} height={32} sx={{ borderRadius: 20 }} />
+                </div>
+
+                <div className="job-details-page-grid" style={{ marginTop: '1.5rem' }}>
+                    <div className="left-column" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                        <div className="content-card" style={{ padding: '1.5rem' }}>
+                            <Skeleton variant="text" width={180} height={28} sx={{ mb: 2 }} />
+                            <div className="job-service-info-grid">
+                                {Array.from(new Array(6)).map((_, i) => (
+                                    <div key={i} className="info-group">
+                                        <Skeleton variant="text" width={80} height={16} />
+                                        <Skeleton variant="text" width={120} height={24} />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="content-card" style={{ padding: '1.5rem' }}>
+                            <Skeleton variant="text" width={180} height={28} sx={{ mb: 2 }} />
+                            {Array.from(new Array(3)).map((_, i) => (
+                                <Skeleton key={i} variant="rounded" width="100%" height={60} sx={{ mb: 1, borderRadius: 2 }} />
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="right-column" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                        <div className="content-card" style={{ padding: '1.5rem' }}>
+                            <Skeleton variant="text" width={180} height={28} sx={{ mb: 2 }} />
+                            {Array.from(new Array(3)).map((_, i) => (
+                                <Skeleton key={i} variant="text" width="80%" height={24} sx={{ mb: 1 }} />
+                            ))}
+                        </div>
+                        <div className="content-card" style={{ padding: '1.5rem' }}>
+                            <Skeleton variant="text" width={150} height={28} sx={{ mb: 2 }} />
+                            {Array.from(new Array(4)).map((_, i) => (
+                                <Box key={i} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                                    <Skeleton variant="text" width={80} height={20} />
+                                    <Skeleton variant="text" width={60} height={20} />
+                                </Box>
+                            ))}
+                            <Box sx={{ mt: 1, pt: 1, borderTop: '1px solid rgba(0,0,0,0.1)', display: 'flex', justifyContent: 'space-between' }}>
+                                <Skeleton variant="text" width={60} height={24} />
+                                <Skeleton variant="text" width={80} height={24} />
+                            </Box>
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -121,8 +174,8 @@ const JobDetail = () => {
 
     return (
         <div className="page-container">
-            <div className="page-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div className="page-header job-detail-header" style={{ gap: '1rem' }}>
+                <div className="job-page-header-content">
                     <button
                         className="icon-action-btn"
                         onClick={() => {
@@ -144,59 +197,62 @@ const JobDetail = () => {
                                 });
                             }
                         }}
-                        style={{ background: 'var(--hover-bg)' }}
+                        style={{ background: 'var(--hover-bg)', width: '40px', height: '40px', borderRadius: '12px' }}
                     >
                         <ChevronLeft size={20} />
                     </button>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <div>
-                            <h3 style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                            <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.25rem' }}>
                                 Job Details
                                 {job.verifiedJob && (
                                     <Tooltip title="Payment Verified" arrow placement="top">
-                                        <BadgeCheck size={25} fill="var(--primary-color)" color="var(--bg-color)" />
+                                        <BadgeCheck size={22} fill="var(--primary-color)" color="var(--bg-color)" />
                                     </Tooltip>
                                 )}
                             </h3>
-                            <p className="subtitle" style={{ margin: 0 }}><span style={{ color: 'var(--primary-color)', fontWeight: '600' }}> JOB - {id}</span></p>
+                            <p className="subtitle" style={{ margin: 0, fontSize: '0.9rem' }}><span style={{ color: 'var(--primary-color)', fontWeight: '600' }}> JOB - {id}</span></p>
                         </div>
                     </div>
                 </div>
-                <div className="header-actions">
+                <div className="header-actions" style={{ marginLeft: 'auto' }}>
                     {job.verifiedJob ? (
                         <span style={{
-                            padding: '0.4rem 1rem',
+                            padding: '0.5rem 1.25rem',
                             borderRadius: '20px',
                             background: `${getStatusColor(job.status)}15`,
                             color: getStatusColor(job.status),
                             fontSize: '0.85rem',
                             fontWeight: '600',
-                            border: `1px solid ${getStatusColor(job.status)}30`
+                            border: `1px solid ${getStatusColor(job.status)}30`,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px'
                         }}>
+                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: getStatusColor(job.status) }} />
                             {job.status}
                         </span>
                     ) : (
                         <span style={{
-                            padding: '0.4rem 1rem',
+                            padding: '0.5rem 1.25rem',
                             borderRadius: '20px',
                             background: `var(--danger-color)`,
                             color: "var(--bg-color)",
                             fontSize: '0.85rem',
                             fontWeight: '600',
-                            border: `1px solid var(--danger-color)`
+                            border: `1px solid var(--danger-color)`,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px'
                         }}>
+                            <Clock size={14} />
                             Verifying
                         </span>
                     )}
                 </div>
             </div>
 
-            <div className="details-grid" style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 350px',
-                gap: '1.5rem',
-                alignItems: 'start'
-            }}>
+            <div className="job-details-page-grid">
                 <div className="left-column" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
                     {/* Service Information */}
@@ -205,7 +261,7 @@ const JobDetail = () => {
                             <Package size={18} className="text-primary" />
                             Service Information
                         </h4>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                        <div className="job-service-info-grid">
                             <div className="info-group">
                                 <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '4px', fontWeight: '500', textTransform: 'uppercase' }}>Service Type</label>
                                 <p style={{ fontWeight: '600' }}>{job.serviceName || '-'}</p>
@@ -240,8 +296,8 @@ const JobDetail = () => {
                     </div>
 
                     {/* MUI Timeline — SubJobDetails */}
-                    <div className="content-card" style={{ padding: '1.5rem' }}>
-                        <h4 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div className="content-card job-timeline-card" style={{ padding: '1.5rem' }}>
+                        <h4 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <Clock4 size={18} className="text-primary" />
                             Service Timeline
                         </h4>
@@ -255,7 +311,7 @@ const JobDetail = () => {
                                         flex: 0,
                                         padding: 0,
                                     },
-                                    padding: 0,
+                                    padding: { xs: '0 0.5rem', sm: 0 },
                                     margin: 0
                                 }}
                             >
@@ -402,10 +458,10 @@ const JobDetail = () => {
                                 <span>Paid Amount</span>
                                 <span style={{ fontWeight: '600' }}>{(job.paidAmount ?? 0).toLocaleString()}</span>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+                            {/* <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
                                 <span>Service Fee</span>
                                 <span className='text-danger' style={{ fontWeight: '600' }}>- {(job.serviceFee ?? 0).toLocaleString()}</span>
-                            </div>
+                            </div> */}
                             <div style={{
                                 marginTop: '0.5rem',
                                 paddingTop: '0.8rem',

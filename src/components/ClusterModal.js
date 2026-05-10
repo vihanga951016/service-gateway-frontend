@@ -72,7 +72,7 @@ const ClusterModal = ({ isOpen, onClose, onClusterSaved, cluster = null }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!clusterName.trim()) return toast.error('Cluster Name is required');
+        if (!clusterName.trim()) return toast.error('Workflow Name is required');
         if (selectedServices.length === 0) return toast.error('Please select at least one service');
 
         setIsSaving(true);
@@ -88,10 +88,10 @@ const ClusterModal = ({ isOpen, onClose, onClusterSaved, cluster = null }) => {
 
             if (cluster) {
                 await updateCluster(clusterData);
-                toast.success('Cluster updated successfully');
+                toast.success('Workflow updated successfully');
             } else {
                 await addCluster(clusterData);
-                toast.success('Cluster created successfully');
+                toast.success('Workflow created successfully');
             }
 
             onClusterSaved();
@@ -143,8 +143,8 @@ const ClusterModal = ({ isOpen, onClose, onClusterSaved, cluster = null }) => {
                             {cluster ? <Pencil size={20} /> : <Layers size={20} />}
                         </div>
                         <div>
-                            <h3>{cluster ? 'Edit Cluster' : 'Create New Cluster'}</h3>
-                            <p className="subtitle">{cluster ? 'Update cluster details and services' : 'Grouping services for regional management'}</p>
+                            <h3>{cluster ? 'Edit Workflow' : 'Create New Workflow'}</h3>
+                            <p className="subtitle">{cluster ? 'Update workflow details and services' : 'Grouping services for regional management'}</p>
                         </div>
                     </div>
                     <button className="close-btn" onClick={onClose}>
@@ -156,7 +156,7 @@ const ClusterModal = ({ isOpen, onClose, onClusterSaved, cluster = null }) => {
                     <div className="modal-body">
                         <div className="form-group" style={{ marginBottom: '1.5rem' }}>
                             <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '0.9rem' }}>
-                                Cluster Name
+                                Workflow Name
                             </label>
                             <input
                                 type="text"
@@ -344,7 +344,7 @@ const ClusterModal = ({ isOpen, onClose, onClusterSaved, cluster = null }) => {
                                     {cluster ? 'Updating...' : 'Creating...'}
                                 </>
                             ) : (
-                                cluster ? 'Update Cluster' : 'Create Cluster'
+                                cluster ? 'Update Workflow' : 'Create Workflow'
                             )}
                         </button>
                     </div>

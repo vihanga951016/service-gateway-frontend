@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { MapPin, Phone, Building, Plus, Edit2, Trash2, ChevronLeft, ChevronRight, Search, Clock, Loader2, Eye } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { Skeleton } from '@mui/material';
 import ServiceCenterModal from '../components/ServiceCenterModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { getServiceCenters, deleteServiceCenter } from '../services/serviceProviderService';
@@ -177,8 +178,35 @@ const ServiceCenters = () => {
                 </div>
 
                 {loading ? (
-                    <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
-                        <Loader2 className="animate-spin text-primary" size={40} />
+                    <div className="table-responsive">
+                        <table className="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th className="mobile-hidden">Location</th>
+                                    <th className="mobile-hidden">Contact</th>
+                                    <th className="mobile-hidden">Opening Hours</th>
+                                    <th className="text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {Array.from(new Array(5)).map((_, i) => (
+                                    <tr key={i}>
+                                        <td><Skeleton variant="text" width="80%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} /></td>
+                                        <td className="mobile-hidden"><Skeleton variant="text" width="90%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} /></td>
+                                        <td className="mobile-hidden"><Skeleton variant="text" width="70%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} /></td>
+                                        <td className="mobile-hidden"><Skeleton variant="text" width="60%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} /></td>
+                                        <td>
+                                            <div className="action-buttons justify-end">
+                                                <Skeleton variant="circular" width={32} height={32} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                                <Skeleton variant="circular" width={32} height={32} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                                <Skeleton variant="circular" width={32} height={32} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                 ) : (
                     <>
@@ -189,9 +217,9 @@ const ServiceCenters = () => {
                                     <thead>
                                         <tr>
                                             <th>Name</th>
-                                            <th>Location</th>
-                                            <th>Contact</th>
-                                            <th>Opening Hours</th>
+                                            <th className="mobile-hidden">Location</th>
+                                            <th className="mobile-hidden">Contact</th>
+                                            <th className="mobile-hidden">Opening Hours</th>
                                             <th className="text-right">Actions</th>
                                         </tr>
                                     </thead>
@@ -200,14 +228,14 @@ const ServiceCenters = () => {
                                             centers.map(center => (
                                                 <tr key={center.id}>
                                                     <td className="font-medium">{center.name}</td>
-                                                    <td>
+                                                    <td className="mobile-hidden">
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                             <MapPin size={14} className="text-muted" />
                                                             {center.location}
                                                         </div>
                                                     </td>
-                                                    <td>{center.contact}</td>
-                                                    <td>
+                                                    <td className="mobile-hidden">{center.contact}</td>
+                                                    <td className="mobile-hidden">
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                             {`${center.fopenTime || ''} - ${center.fcloseTime || ''}`}
                                                         </div>
@@ -251,7 +279,7 @@ const ServiceCenters = () => {
                             </div>
                         ) : (
                             /* Card Grid View */
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1.5rem' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 350px), 1fr))', gap: '1.5rem' }}>
                                 {centers.map(center => (
                                     <div key={center.id} className="content-card" style={{
                                         borderLeft: '4px solid #3b82f6',

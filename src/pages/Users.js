@@ -6,6 +6,7 @@ import { getConfig } from '../config';
 import ConfirmDialog from '../components/ConfirmDialog';
 import InfoModal from '../components/InfoModal';
 import UserModal from '../components/UserModal';
+import { Skeleton } from '@mui/material';
 import '../App.css';
 import { useNavigate } from 'react-router-dom';
 
@@ -398,7 +399,7 @@ const Users = () => {
                                 style={{ paddingLeft: '35px', width: '100%' }}
                             />
                         </div>
-                        <div className="search-filters" style={{ display: 'flex', gap: '0.5rem' }}>
+                        <div className="search-filters mobile-hidden" style={{ display: 'flex', gap: '0.5rem' }}>
                             <button
                                 className={`filter-btn ${searchFilter === 'none' ? 'active' : ''}`}
                                 onClick={() => setSearchFilter('none')}
@@ -426,23 +427,41 @@ const Users = () => {
                         <thead>
                             <tr>
                                 <th>Name</th>
-                                <th>Email</th>
-                                <th>Contact</th>
-                                <th>NIC</th>
-                                <th>User Type</th>
-                                <th>Role</th>
-                                <th>Service Center</th>
-                                <th>Status</th>
+                                <th className="mobile-hidden">Email</th>
+                                <th className="mobile-hidden">Contact</th>
+                                <th className="mobile-hidden">NIC</th>
+                                <th className="mobile-hidden">User Type</th>
+                                <th className="mobile-hidden">Role</th>
+                                <th className="mobile-hidden">Service Center</th>
+                                <th className="mobile-hidden">Status</th>
                                 <th className="text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr>
-                                    <td colSpan="8" className="text-center" style={{ padding: '2rem' }}>
-                                        <div style={{ color: 'var(--text-secondary)' }}>Loading users...</div>
-                                    </td>
-                                </tr>
+                                Array.from(new Array(5)).map((_, i) => (
+                                    <tr key={i}>
+                                        <td>
+                                            <div className="user-cell" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <Skeleton variant="circular" width={32} height={32} />
+                                                <Skeleton variant="text" width={120} height={20} />
+                                            </div>
+                                        </td>
+                                        <td className="mobile-hidden"><Skeleton variant="text" width={150} /></td>
+                                        <td className="mobile-hidden"><Skeleton variant="text" width={100} /></td>
+                                        <td className="mobile-hidden"><Skeleton variant="text" width={100} /></td>
+                                        <td className="mobile-hidden"><Skeleton variant="rounded" width={80} height={24} sx={{ borderRadius: '12px' }} /></td>
+                                        <td className="mobile-hidden"><Skeleton variant="text" width={100} /></td>
+                                        <td className="mobile-hidden"><Skeleton variant="text" width={120} /></td>
+                                        <td className="mobile-hidden"><Skeleton variant="text" width={80} /></td>
+                                        <td>
+                                            <div className="action-buttons justify-end">
+                                                <Skeleton variant="circular" width={28} height={28} />
+                                                <Skeleton variant="circular" width={28} height={28} className="mobile-hidden" />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
                             ) : totalUsers === 0 ? (
                                 <tr>
                                     <td colSpan="8" className="text-center" style={{ padding: '2rem' }}>
@@ -454,19 +473,19 @@ const Users = () => {
                                     <tr key={user.id || index}>
                                         <td>
                                             <div className="user-cell" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                <div className="avatar-placeholder" style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <div className="avatar-placeholder" style={{ width: '32px', height: '32px', flexShrink: 0, borderRadius: '50%', background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                     <User size={16} className="text-secondary" />
                                                 </div>
                                                 <span className="font-medium">{user.name || `${user.firstName || ''} ${user.lastName || ''}`}</span>
                                             </div>
                                         </td>
-                                        <td>
+                                        <td className="mobile-hidden">
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                 {/* <Mail size={14} className="text-muted" /> */}
                                                 {user.email}
                                             </div>
                                         </td>
-                                        <td>
+                                        <td className="mobile-hidden">
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                 {/* <Phone size={14} className="text-muted" />
                                                 {user.contact || user.mobile} */}
@@ -479,7 +498,7 @@ const Users = () => {
                                                 }
                                             </div>
                                         </td>
-                                        <td>
+                                        <td className="mobile-hidden">
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                 {/* <FileText size={14} className="text-muted" /> */}
                                                 {
@@ -492,18 +511,18 @@ const Users = () => {
                                                 {/* {user.nic} */}
                                             </div>
                                         </td>
-                                        <td>
+                                        <td className="mobile-hidden">
                                             <span className={getUserTypeBadgeClass(user.userType)}>
                                                 {user.userType}
                                             </span>
                                         </td>
-                                        <td>
+                                        <td className="mobile-hidden">
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                 {/* <Briefcase size={14} className="text-muted" /> */}
                                                 {user.role?.name || user.role || '-'}
                                             </div>
                                         </td>
-                                        <td>
+                                        <td className="mobile-hidden">
                                             {user.serviceCenter ? (
                                                 <div className="service-center-info">
                                                     <div className="font-medium">{user.serviceCenter.name || user.serviceCenter}</div>
@@ -512,7 +531,7 @@ const Users = () => {
                                                 <span className="text-muted">-</span>
                                             )}
                                         </td>
-                                        <td>
+                                        <td className="mobile-hidden">
                                             <div className={`status-text ${user.providerApproved === "approved" ? 'text-success' : 'text-warning'}`} style={{ fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
                                                 {user.providerApproved === "approved" ? (
                                                     <><CheckCircle size={10} /> Approved</>
@@ -525,7 +544,7 @@ const Users = () => {
                                             <div className="action-buttons justify-end">
                                                 {/* Approve Button - Only if not already approved or strictly for providers? Assuming logical check */}
                                                 {user.providerApproved === "pending" && user.serviceCenter && (
-                                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                                    <div className="mobile-hidden" style={{ display: 'flex', gap: '8px' }}>
                                                         <button
                                                             className="icon-action-btn text-success"
                                                             title="Approve"
@@ -551,7 +570,7 @@ const Users = () => {
                                                     <Edit2 size={16} />
                                                 </button>
                                                 <button
-                                                    className="icon-action-btn text-danger"
+                                                    className="icon-action-btn text-danger mobile-hidden"
                                                     title="Delete"
                                                     onClick={() => handleDeleteClick(user)}
                                                 >
