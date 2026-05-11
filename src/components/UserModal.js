@@ -260,14 +260,14 @@ const UserModal = ({ isOpen, onClose, onSave, user }) => {
                         <X size={20} />
                     </button>
                 </div>
-                <div className="modal-body">
+                <div className="modal-body" style={{ maxHeight: '75vh', overflowY: 'auto' }}>
                     {isLoadingUserDetails ? (
                         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '300px' }}>
                             <Loader2 className="animate-spin text-primary" size={48} />
                         </div>
                     ) : (
                         <form onSubmit={handleSubmit}>
-                            <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                            <div className="form-grid">
                                 {/* First Name */}
                                 <div className="input-group">
                                     <User className="input-icon" size={18} />
@@ -295,7 +295,7 @@ const UserModal = ({ isOpen, onClose, onSave, user }) => {
                                 </div>
 
                                 {/* Email */}
-                                <div className="input-group" style={{ gridColumn: 'span 2' }}>
+                                <div className="input-group full-width">
                                     <Mail className="input-icon" size={18} />
                                     <input
                                         type="email"

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Pencil, Search, Plus, Layers, Trash2, Loader2 } from 'lucide-react';
+import { Skeleton } from '@mui/material';
 import ClusterModal from '../components/ClusterModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { getClusters, deleteCluster } from '../services/serviceProviderService';
@@ -79,7 +80,7 @@ const Clusters = () => {
         setIsDeleting(true);
         try {
             await deleteCluster(clusterToDelete.id);
-            toast.success('Cluster deleted successfully');
+            toast.success('Workflow deleted successfully');
             fetchClusters();
         } catch (error) {
             if (error?.response?.data?.data) {
@@ -118,20 +119,20 @@ const Clusters = () => {
         <div className="page-container">
             <div className="page-header">
                 <div>
-                    <h3>Service Clusters</h3>
-                    <p className="subtitle">Clusters are userfull for your customers and make easy to choose multiple services at once.</p>
+                    <h3>Service Workflows</h3>
+                    <p className="subtitle">Workflows are useful for your customers and make it easy to choose multiple services at once.</p>
                 </div>
                 <div className="header-actions">
                     <button className="primary-btn" onClick={handleCreate}>
                         <Plus size={18} />
-                        <span>Create Cluster</span>
+                        <span>Create Workflow</span>
                     </button>
                 </div>
             </div>
 
             {/* <div className="dashboard-stats" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
                 <div className="stat-card">
-                    <h3>Total Clusters</h3>
+                    <h3>Total Workflows</h3>
                     <div className="stat-value">03</div>
                     <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '0.5rem' }}>Across 03 Regions</div>
                 </div>
@@ -149,11 +150,11 @@ const Clusters = () => {
 
             <div className="content-card">
                 <div className="table-toolbar" style={{ marginBottom: '1.5rem' }}>
-                    <div className="search-bar" style={{ position: 'relative', width: '350px' }}>
+                    <div className="search-bar" style={{ position: 'relative', width: '100%', maxWidth: '350px' }}>
                         <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
                         <input
                             type="text"
-                            placeholder="Search clusters, regions or managers..."
+                            placeholder="Search workflows, regions or managers..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="form-control"
@@ -166,24 +167,80 @@ const Clusters = () => {
                     <table className="data-table">
                         <thead>
                             <tr>
-                                <th>Cluster Name</th>
-                                <th>Services</th>
+                                <th>Workflow Name</th>
+                                <th className="mobile-hidden">Services</th>
                                 <th style={{ textAlign: 'right' }}>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredClusters.length > 0 ? (
+                            {loading ? (
+                                [...Array(5)].map((_, index) => (
+                                    <tr key={`skeleton-${index}`}>
+                                        <td>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                    <Skeleton variant="rectangular" width={32} height={32} sx={{ borderRadius: '8px', bgcolor: 'rgba(255,255,255,0.1)' }} className="mobile-hidden" />
+                                                    <Skeleton variant="text" width={120} height={24} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                                </div>
+                                                <div className="desktop-hidden" style={{ marginTop: '4px', display: 'flex', gap: '6px' }}>
+                                                    <Skeleton variant="rectangular" width={60} height={20} sx={{ borderRadius: '10px', bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                                    <Skeleton variant="rectangular" width={60} height={20} sx={{ borderRadius: '10px', bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="mobile-hidden">
+                                            <div className="permissions-list">
+                                                <Skeleton variant="rectangular" width={80} height={24} sx={{ borderRadius: '12px', bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                                <Skeleton variant="rectangular" width={80} height={24} sx={{ borderRadius: '12px', bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                                <Skeleton variant="rectangular" width={80} height={24} sx={{ borderRadius: '12px', bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                            </div>
+                                        </td>
+                                        <td style={{ textAlign: 'right' }}>
+                                            <div className="action-buttons justify-end justify-mobile-center">
+                                                <Skeleton variant="circular" width={32} height={32} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                                <Skeleton variant="circular" width={32} height={32} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} className="mobile-hidden" />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : filteredClusters.length > 0 ? (
                                 filteredClusters.map(cluster => (
                                     <tr key={cluster.id}>
                                          <td className="font-medium">
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                <div style={{ padding: '8px', background: 'var(--info-bg)', color: 'var(--info-color)', borderRadius: '8px' }}>
-                                                    <Layers size={16} />
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                    <div className="mobile-hidden" style={{ padding: '8px', background: 'var(--info-bg)', color: 'var(--info-color)', borderRadius: '8px' }}>
+                                                        <Layers size={16} />
+                                                    </div>
+                                                    {cluster.name}
                                                 </div>
-                                                {cluster.name}
+                                                <div className="desktop-hidden" style={{ marginTop: '4px' }}>
+                                                    <div className="permissions-list" style={{ flexWrap: 'wrap' }}>
+                                                        {cluster.services && cluster.services.map((service, index) => (
+                                                            <span key={service.id || index} className="badge-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', padding: '2px 8px' }}>
+                                                                <span style={{
+                                                                    background: 'var(--primary-color)',
+                                                                    color: 'white',
+                                                                    width: '16px',
+                                                                    height: '16px',
+                                                                    borderRadius: '50%',
+                                                                    display: 'inline-flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    fontSize: '0.6rem',
+                                                                    fontWeight: '600',
+                                                                    flexShrink: 0
+                                                                }}>
+                                                                    {service.orderNumber || index + 1}
+                                                                </span>
+                                                                {typeof service === 'string' ? service : service.name}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
                                             </div>
                                         </td>
-                                        <td>
+                                        <td className="mobile-hidden">
                                             <div className="permissions-list">
                                                 {cluster.services && cluster.services.map((service, index) => (
                                                     <span key={service.id || index} className="badge-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
@@ -211,11 +268,11 @@ const Clusters = () => {
                                             </div>
                                         </td>
                                         <td style={{ textAlign: 'right' }}>
-                                            <div className="action-buttons justify-end">
+                                            <div className="action-buttons justify-end justify-mobile-center">
                                                 <button className="icon-action-btn" title="Edit" onClick={() => handleEdit(cluster)}>
                                                     <Pencil size={16} />
                                                 </button>
-                                                <button className="icon-action-btn text-danger" title="Delete" onClick={() => handleDeleteClick(cluster)}>
+                                                <button className="icon-action-btn text-danger mobile-hidden" title="Delete" onClick={() => handleDeleteClick(cluster)}>
                                                     <Trash2 size={16} />
                                                 </button>
                                             </div>
@@ -225,7 +282,7 @@ const Clusters = () => {
                             ) : (
                                 <tr>
                                     <td colSpan="8" className="text-center" style={{ padding: '3rem', color: 'var(--text-secondary)' }}>
-                                        No clusters found matching your search.
+                                        No workflows found matching your search.
                                     </td>
                                 </tr>
                             )}

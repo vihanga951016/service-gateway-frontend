@@ -30,7 +30,7 @@ const AssignClusterModal = ({ isOpen, onClose, onSave, centerId }) => {
             setClusters(data || []);
         } catch (error) {
             console.error('Failed to fetch non-assigned clusters:', error);
-            toast.error('Failed to load available clusters');
+            toast.error('Failed to load available workflows');
         } finally {
             setLoading(false);
         }
@@ -48,7 +48,7 @@ const AssignClusterModal = ({ isOpen, onClose, onSave, centerId }) => {
 
     const handleAssign = async () => {
         if (selectedClusters.length === 0) {
-            toast.error('Please select at least one cluster');
+            toast.error('Please select at least one workflow');
             return;
         }
 
@@ -58,7 +58,7 @@ const AssignClusterModal = ({ isOpen, onClose, onSave, centerId }) => {
             const clusterIds = selectedClusters.map(c => c.id);
             await assignClusterToCenter(clusterIds, centerId);
 
-            toast.success(`${selectedClusters.length} cluster${selectedClusters.length > 1 ? 's' : ''} added successfully`);
+            toast.success(`${selectedClusters.length} workflow${selectedClusters.length > 1 ? 's' : ''} added successfully`);
             onSave();
             onClose();
         } catch (error) {
@@ -96,7 +96,7 @@ const AssignClusterModal = ({ isOpen, onClose, onSave, centerId }) => {
                         <div className="icon-circle" style={{ background: 'var(--primary-light)', color: 'var(--primary-color)' }}>
                             <Layers size={20} />
                         </div>
-                        <h3>Add Service Clusters</h3>
+                        <h3>Add Service Workflows</h3>
                     </div>
                     <button className="close-btn" onClick={onClose}>
                         <X size={20} />
@@ -105,11 +105,11 @@ const AssignClusterModal = ({ isOpen, onClose, onSave, centerId }) => {
 
                 <div className="modal-body">
                     <p style={{ marginBottom: '1.25rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                        Search and select one or more regional service clusters to add to this center.
+                        Search and select one or more regional service workflows to add to this center.
                     </p>
 
                     <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-                        <label className="form-label">Select Clusters</label>
+                        <label className="form-label">Select Workflows</label>
                         <div className="custom-dropdown" ref={dropdownRef}>
                             <div
                                 className="dropdown-input-wrapper"
@@ -127,7 +127,7 @@ const AssignClusterModal = ({ isOpen, onClose, onSave, centerId }) => {
                                 )}
                                 <input
                                     type="text"
-                                    placeholder={selectedClusters.length > 0 ? "" : "Search clusters..."}
+                                    placeholder={selectedClusters.length > 0 ? "" : "Search workflows..."}
                                     className="dropdown-search-input"
                                     value={searchTerm}
                                     onChange={(e) => {
@@ -154,7 +154,7 @@ const AssignClusterModal = ({ isOpen, onClose, onSave, centerId }) => {
                             {isDropdownOpen && (
                                 <div className="dropdown-options-list" style={{ maxHeight: '250px' }}>
                                     {loading ? (
-                                        <div className="no-options">Loading clusters...</div>
+                                        <div className="no-options">Loading workflows...</div>
                                     ) : filteredClusters.length > 0 ? (
                                         filteredClusters.map(cluster => {
                                             const isSelected = selectedClusters.some(c => c.id === cluster.id);
@@ -187,7 +187,7 @@ const AssignClusterModal = ({ isOpen, onClose, onSave, centerId }) => {
                                             );
                                         })
                                     ) : (
-                                        <div className="no-options">No clusters found</div>
+                                        <div className="no-options">No workflows found</div>
                                     )}
                                 </div>
                             )}
@@ -207,7 +207,7 @@ const AssignClusterModal = ({ isOpen, onClose, onSave, centerId }) => {
                         }}>
                             <div style={{ width: '100%', marginBottom: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <span style={{ fontSize: '0.8rem', fontWeight: '600', color: 'var(--text-secondary)' }}>
-                                    Selected Clusters ({selectedClusters.length})
+                                    Selected Workflows ({selectedClusters.length})
                                 </span>
                                 <button
                                     onClick={() => setSelectedClusters([])}
@@ -259,7 +259,7 @@ const AssignClusterModal = ({ isOpen, onClose, onSave, centerId }) => {
                                 <span>Adding...</span>
                             </>
                         ) : (
-                            `Add ${selectedClusters.length > 0 ? selectedClusters.length : ''} Cluster${selectedClusters.length > 1 ? 's' : ''}`
+                            `Add ${selectedClusters.length > 0 ? selectedClusters.length : ''} Workflow${selectedClusters.length > 1 ? 's' : ''}`
                         )}
                     </button>
                 </div>

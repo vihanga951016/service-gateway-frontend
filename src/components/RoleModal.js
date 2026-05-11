@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { getConfig } from '../config';
 import '../App.css';
 import { useNavigate } from 'react-router-dom';
+import { Skeleton } from '@mui/material';
 
 const RoleModal = ({ isOpen, onClose, role, onSave }) => {
     const navigate = useNavigate();
@@ -193,7 +194,7 @@ const RoleModal = ({ isOpen, onClose, role, onSave }) => {
                     </button>
                 </div>
 
-                <div className="modal-body">
+                <div className="modal-body" style={{ maxHeight: '75vh', overflowY: 'auto', paddingRight: '0.5rem' }}>
                     <div className="form-group">
                         <label className="form-label">Role Name</label>
                         <div className="input-group">
@@ -209,63 +210,62 @@ const RoleModal = ({ isOpen, onClose, role, onSave }) => {
                     <div className="form-group">
                         <label className="form-label">Permissions</label>
 
-                        {/* Selected Permissions Tags */}
-                        <div className="selected-tags mb-2">
-                            {selectedPermissions.map(perm => (
-                                <span key={perm} className="tag-pill">
-                                    {perm}
-                                    <button onClick={() => removePermission(perm)} className="tag-remove">
-                                        <X size={12} />
-                                    </button>
-                                </span>
-                            ))}
+                        <div className="input-group" style={{ marginBottom: '1rem' }}>
+                            <Search className="input-icon" size={18} />
+                            <input
+                                type="text"
+                                placeholder="Search permissions..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
                         </div>
 
-                        {/* Custom Searchable Dropdown */}
-                        <div className="custom-dropdown" ref={dropdownRef}>
-                            <div
-                                className="dropdown-input-wrapper"
-                                onClick={() => setIsDropdownOpen(true)}
-                            >
-                                <Search size={18} className="search-icon" />
-                                <input
-                                    type="text"
-                                    placeholder="Search permissions..."
-                                    className="dropdown-search-input"
-                                    value={searchTerm}
-                                    onChange={(e) => {
-                                        setSearchTerm(e.target.value);
-                                        setIsDropdownOpen(true);
-                                    }}
-                                    onFocus={() => setIsDropdownOpen(true)}
-                                />
-                                <button className="dropdown-toggle-btn">
-                                    {isDropdownOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                                </button>
-                            </div>
-
-                            {isDropdownOpen && (
-                                <div className="dropdown-options-list">
-                                    {isLoadingPermissions ? (
-                                        <div className="no-options">Loading permissions...</div>
-                                    ) : filteredPermissions.length > 0 ? (
-                                        filteredPermissions.map(perm => {
-                                            const isSelected = selectedPermissions.includes(perm);
-                                            return (
-                                                <div
-                                                    key={perm}
-                                                    className={`dropdown-option ${isSelected ? 'selected' : ''}`}
-                                                    onClick={() => togglePermission(perm)}
-                                                >
-                                                    <span>{perm}</span>
-                                                    {isSelected && <Check size={16} className="text-primary" />}
-                                                </div>
-                                            );
-                                        })
-                                    ) : (
-                                        <div className="no-options">No permissions found</div>
-                                    )}
+                        <div style={{
+                            maxHeight: '300px',
+                            overflowY: 'auto',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            borderRadius: '0.5rem',
+                            padding: '1rem',
+                            background: 'rgba(255,255,255,0.02)'
+                        }}>
+                            {isLoadingPermissions ? (
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.8rem' }}>
+                                    {Array.from(new Array(8)).map((_, i) => (
+                                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.4rem' }}>
+                                            <Skeleton variant="rounded" width={16} height={16} sx={{ borderRadius: '3px', bgcolor: 'rgba(255,255,255,0.1)', flexShrink: 0 }} />
+                                            <Skeleton variant="text" width={i % 3 === 0 ? 160 : i % 2 === 0 ? 120 : 140} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                        </div>
+                                    ))}
                                 </div>
+                            ) : filteredPermissions.length > 0 ? (
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.8rem' }}>
+                                    {filteredPermissions.map(perm => {
+                                        const isSelected = selectedPermissions.includes(perm);
+                                        return (
+                                            <label key={perm} style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '0.6rem',
+                                                cursor: 'pointer',
+                                                color: isSelected ? '#fff' : '#cbd5e1',
+                                                padding: '0.4rem',
+                                                borderRadius: '0.25rem',
+                                                transition: 'background 0.2s',
+                                                background: isSelected ? 'rgba(59, 130, 246, 0.1)' : 'transparent'
+                                            }}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isSelected}
+                                                    onChange={() => togglePermission(perm)}
+                                                    style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: '#3b82f6', flexShrink: 0 }}
+                                                />
+                                                <span style={{ fontSize: '0.9rem', wordBreak: 'break-word', lineHeight: '1.4' }}>{perm}</span>
+                                            </label>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="no-options" style={{ color: '#94a3b8', textAlign: 'center' }}>No permissions found</div>
                             )}
                         </div>
                     </div>

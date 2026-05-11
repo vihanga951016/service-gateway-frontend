@@ -5,6 +5,7 @@ import axios from 'axios';
 import { getConfig } from '../config';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { Skeleton } from '@mui/material';
 
 const UserProfile = () => {
     const navigate = useNavigate();
@@ -29,6 +30,7 @@ const UserProfile = () => {
     const [editFormData, setEditFormData] = useState(null);
     const [roles, setRoles] = useState([]);
     const [isLoadingRoles, setIsLoadingRoles] = useState(false);
+    const [isLoadingProfile, setIsLoadingProfile] = useState(true);
 
     const fetchInitiated = useRef(false);
 
@@ -40,6 +42,7 @@ const UserProfile = () => {
     }, []);
 
     const fetchUserProfile = async () => {
+        setIsLoadingProfile(true);
         try {
             const baseUrl = getConfig().baseUrl;
             const token = localStorage.getItem('token');
@@ -79,6 +82,8 @@ const UserProfile = () => {
             } else {
                 toast.error('Network error');
             }
+        } finally {
+            setIsLoadingProfile(false);
         }
     };
 
@@ -301,31 +306,46 @@ const UserProfile = () => {
                                 fontSize: '3rem',
                                 fontWeight: 'bold'
                             }}>
-                                {user.fname[0]}{user.lname[0]}
+                                {isLoadingProfile ? (
+                                    <Skeleton variant="circular" width={112} height={112} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                ) : (
+                                    (user.fname && user.lname) ? `${user.fname[0]}${user.lname[0]}` : ''
+                                )}
                             </div>
-                            <button style={{
-                                position: 'absolute',
-                                bottom: '0',
-                                right: '0',
-                                background: '#3b82f6',
-                                border: 'none',
-                                borderRadius: '50%',
-                                width: '32px',
-                                height: '32px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: 'white',
-                                cursor: 'pointer'
-                            }}>
-                                <Camera size={16} />
-                            </button>
+                            {!isLoadingProfile && (
+                                <button style={{
+                                    position: 'absolute',
+                                    bottom: '0',
+                                    right: '0',
+                                    background: '#3b82f6',
+                                    border: 'none',
+                                    borderRadius: '50%',
+                                    width: '32px',
+                                    height: '32px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: 'white',
+                                    cursor: 'pointer'
+                                }}>
+                                    <Camera size={16} />
+                                </button>
+                            )}
                         </div>
 
-                        <h2 style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>{user.fname} {user.lname}</h2>
-                        <span className={getUserTypeBadgeClass(user.userType)} style={{ marginBottom: '1rem', display: 'inline-block' }}>
-                            {user.userType}
-                        </span>
+                        {isLoadingProfile ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <Skeleton variant="text" width="60%" height={36} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                <Skeleton variant="rounded" width="30%" height={24} sx={{ mb: '1rem', borderRadius: '12px', bgcolor: 'rgba(255,255,255,0.1)' }} />
+                            </div>
+                        ) : (
+                            <>
+                                <h2 style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>{user.fname} {user.lname}</h2>
+                                <span className={getUserTypeBadgeClass(user.userType)} style={{ marginBottom: '1rem', display: 'inline-block' }}>
+                                    {user.userType}
+                                </span>
+                            </>
+                        )}
 
                         <div style={{
                             display: 'flex',
@@ -336,90 +356,149 @@ const UserProfile = () => {
                             marginTop: '1rem',
                             fontSize: '0.9rem'
                         }}>
-                            <Calendar size={14} />
-                            <span>Member since {user.joinDate}</span>
+                            {!isLoadingProfile && <Calendar size={14} />}
+                            {isLoadingProfile ? (
+                                <Skeleton variant="text" width="50%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                            ) : (
+                                <span>Member since {user.joinDate}</span>
+                            )}
                         </div>
                     </div>
                 </div>
 
                 {/* Right Column: Details */}
                 <div className="content-card">
-                    <h4 style={{
-                        borderBottom: '1px solid rgba(255,255,255,0.1)',
-                        paddingBottom: '1rem',
-                        marginBottom: '1.5rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem'
-                    }}>
-                        <User size={20} className="text-primary" />
-                        Personal Information
-                    </h4>
+                    {isLoadingProfile ? (
+                        null
+                    ) : (
+                        <h4 style={{
+                            borderBottom: '1px solid rgba(255,255,255,0.1)',
+                            paddingBottom: '1rem',
+                            marginBottom: '1.5rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem'
+                        }}>
+                            <User size={20} className="text-primary" />
+                            Personal Information
+                        </h4>
+                    )}
+
 
                     <div className="info-grid">
-                        {user.email ? (
-                            <div className="detail-group">
-                                <label style={{ color: '#94a3b8', fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Email Address</label>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1rem' }}>
-                                    <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(59, 130, 246, 0.1)', color: '#60a5fa' }}>
-                                        <Mail size={18} />
-                                    </div>
-                                    {user.email}
-                                </div>
-                            </div>
-                        ) : null}
-
-                        {user.contact ? (
-                            <div className="detail-group">
-                                <label style={{ color: '#94a3b8', fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Phone Number</label>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1rem' }}>
-                                    <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(59, 130, 246, 0.1)', color: '#60a5fa' }}>
-                                        <Phone size={18} />
-                                    </div>
-                                    {user.contact}
-                                </div>
-                            </div>
-                        ) : null}
-
-                        {
-                            user.nic ? (
+                        {isLoadingProfile ? (
+                            <>
                                 <div className="detail-group">
-                                    <label style={{ color: '#94a3b8', fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>National ID (NIC)</label>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1rem' }}>
-                                        <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(59, 130, 246, 0.1)', color: '#60a5fa' }}>
-                                            <FileText size={18} />
-                                        </div>
-                                        {user.nic}
+                                    <Skeleton variant="text" width="30%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1rem', marginTop: '0.5rem' }}>
+                                        <Skeleton variant="rounded" width={34} height={34} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                        <Skeleton variant="text" width="60%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
                                     </div>
                                 </div>
-                            ) : null
-                        }
+                                <div className="detail-group">
+                                    <Skeleton variant="text" width="30%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1rem', marginTop: '0.5rem' }}>
+                                        <Skeleton variant="rounded" width={34} height={34} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                        <Skeleton variant="text" width="50%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                    </div>
+                                </div>
+                                <div className="detail-group">
+                                    <Skeleton variant="text" width="30%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1rem', marginTop: '0.5rem' }}>
+                                        <Skeleton variant="rounded" width={34} height={34} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                        <Skeleton variant="text" width="50%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                {user.email ? (
+                                    <div className="detail-group">
+                                        <label style={{ color: '#94a3b8', fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Email Address</label>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1rem' }}>
+                                            <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(59, 130, 246, 0.1)', color: '#60a5fa' }}>
+                                                <Mail size={18} />
+                                            </div>
+                                            {user.email}
+                                        </div>
+                                    </div>
+                                ) : null}
+
+                                {user.contact ? (
+                                    <div className="detail-group">
+                                        <label style={{ color: '#94a3b8', fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Phone Number</label>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1rem' }}>
+                                            <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(59, 130, 246, 0.1)', color: '#60a5fa' }}>
+                                                <Phone size={18} />
+                                            </div>
+                                            {user.contact}
+                                        </div>
+                                    </div>
+                                ) : null}
+
+                                {
+                                    user.nic ? (
+                                        <div className="detail-group">
+                                            <label style={{ color: '#94a3b8', fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>National ID (NIC)</label>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1rem' }}>
+                                                <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(59, 130, 246, 0.1)', color: '#60a5fa' }}>
+                                                    <FileText size={18} />
+                                                </div>
+                                                {user.nic}
+                                            </div>
+                                        </div>
+                                    ) : null
+                                }
+                            </>
+                        )}
 
                         <div className="detail-group">
-                            <label style={{ color: '#94a3b8', fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Service Information</label>
-                            {user.role ? (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1rem', marginBottom: '0.5rem' }}>
-                                    <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.1)', color: '#34d399' }}>
-                                        <Shield size={18} />
+                            {/* <label style={{ color: '#94a3b8', fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Service Information</label> */}
+                            {isLoadingProfile ? (
+                                <>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1rem', marginBottom: '0.5rem' }}>
+                                        <Skeleton variant="rounded" width={34} height={34} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                        <div>
+                                            <Skeleton variant="text" width={120} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                            <Skeleton variant="text" width={80} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                        </div>
                                     </div>
-                                    <div>
-                                        <div style={{ fontSize: '0.9rem', color: '#e2e8f0' }}>{user.role}</div>
-                                        <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Current Role</div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1rem', marginBottom: '0.5rem' }}>
+                                        <Skeleton variant="rounded" width={34} height={34} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                        <div>
+                                            <Skeleton variant="text" width={120} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                            <Skeleton variant="text" width={80} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                        </div>
                                     </div>
-                                </div>
-                            ) : null}
-                            {user.serviceCenter ? (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1rem', marginBottom: '0.5rem' }}>
-                                    <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.1)', color: '#f87171' }}>
-                                        <MapPin size={18} />
-                                    </div>
-                                    <div>
-                                        <div style={{ fontSize: '0.9rem', color: '#e2e8f0' }}>{user.serviceCenter}</div>
-                                        <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Service Center</div>
-                                    </div>
-                                </div>
-                            ) : null
-                            }
+                                </>
+                            ) : (
+                                <>
+                                    <label style={{ color: '#94a3b8', fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Service Information</label>
+                                    {user.role ? (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1rem', marginBottom: '0.5rem' }}>
+                                            <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.1)', color: '#34d399' }}>
+                                                <Shield size={18} />
+                                            </div>
+                                            <div>
+                                                <div style={{ fontSize: '0.9rem', color: '#e2e8f0' }}>{user.role}</div>
+                                                <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Current Role</div>
+                                            </div>
+                                        </div>
+                                    ) : null}
+                                    {user.serviceCenter ? (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1rem', marginBottom: '0.5rem' }}>
+                                            <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.1)', color: '#f87171' }}>
+                                                <MapPin size={18} />
+                                            </div>
+                                            <div>
+                                                <div style={{ fontSize: '0.9rem', color: '#e2e8f0' }}>{user.serviceCenter}</div>
+                                                <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Service Center</div>
+                                            </div>
+                                        </div>
+                                    ) : null
+                                    }
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>

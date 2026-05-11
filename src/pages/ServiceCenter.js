@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Users, Layout, Briefcase, ChevronLeft, MapPin, Phone, Clock, Mail, Edit2, Loader2, UserPlus, Trash2, Layers, Ban, CheckCircle, Plus, ArrowUp, ArrowDown, AlertTriangle } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { Skeleton } from '@mui/material';
 import { getServiceCenterById, getEmployeesByCenterId, removeUserFromCenter, getServicePointsByCenterId, deleteServicePoint, getClusters, removeClusterFromCenter, getClustersByCenterId, removeClusterFromCenterById, getClusterServicesByCenterClusterId, toggleClusterServiceStatus, getServiceCenters, updateCenterClusterService, reorderClusterServices, checkServicesAssignToPoint } from '../services/serviceProviderService';
 import AssignUserModal from '../components/AssignUserModal';
 import AssignClusterModal from '../components/AssignClusterModal';
@@ -402,6 +403,435 @@ const ServiceCenter = () => {
         }
     }, [activeTab]);
 
+    const renderEmployeesSection = () => (
+        <div className="tab-section-content">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <h4 style={{ margin: 0 }}>Assigned Employees</h4>
+                <button
+                    className="primary-btn"
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                    onClick={() => setIsAssignModalOpen(true)}
+                >
+                    <UserPlus size={18} />
+                    Assign Employee
+                </button>
+            </div>
+
+            {employeesLoading ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {[1, 2, 3].map(i => (
+                        <Skeleton key={i} variant="rectangular" width="100%" height={60} sx={{ borderRadius: '12px', bgcolor: 'rgba(255,255,255,0.05)' }} />
+                    ))}
+                </div>
+            ) : (
+                <div className="table-responsive">
+                    <table className="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th className="mobile-hidden">Role</th>
+                                <th className="mobile-hidden">Email</th>
+                                <th className="mobile-hidden">Contact</th>
+                                {/* <th>Status</th> */}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {employees.length > 0 ? (
+                                employees.map(emp => (
+                                    <tr key={emp.userId}>
+                                        <td className="font-medium">{emp.userName}</td>
+                                        <td className="mobile-hidden">{emp.role?.name || emp.role || 'N/A'}</td>
+                                        <td className="mobile-hidden">{emp.email}</td>
+                                        <td className="mobile-hidden">
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                {emp.contact}
+                                                <button
+                                                    className="icon-action-btn text-danger"
+                                                    title="Remove from Center"
+                                                    onClick={() => {
+                                                        setEmployeeToRemove(emp);
+                                                        setIsRemoveDialogOpen(true);
+                                                    }}
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="4" className="text-center" style={{ padding: '2rem', color: '#94a3b8' }}>
+                                        No employees assigned to this center.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+        </div>
+    );
+
+    const renderPointsSection = () => (
+        <div className="tab-section-content">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <h4 style={{ margin: 0 }}>Active Service Points</h4>
+                <button
+                    className="primary-btn"
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                    onClick={() => {
+                        setSelectedPoint(null);
+                        setIsPointModalOpen(true);
+                    }}
+                >
+                    <Layout size={18} />
+                    Add Service Point
+                </button>
+            </div>
+
+            {pointsLoading ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: '1.5rem' }}>
+                    {[1, 2, 3].map(i => (
+                        <Skeleton key={i} variant="rectangular" width="100%" height={180} sx={{ borderRadius: '16px', bgcolor: 'rgba(255,255,255,0.05)' }} />
+                    ))}
+                </div>
+            ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: '1.5rem' }}>
+                    {servicePoints.length > 0 ? (
+                        servicePoints.map(point => (
+                            <div key={point.id} className="stat-card" style={{ padding: '1.5rem', border: '1px solid var(--border-color)', borderRadius: '16px', position: 'relative', overflow: 'hidden' }}>
+                                <div style={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', background: !point.temporaryClosed ? '#10b981' : '#ef4444' }}></div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                                    <div className="icon-box-primary" style={{ background: 'rgba(37, 99, 235, 0.1)', padding: '0.75rem', borderRadius: '12px' }}>
+                                        <span className='text-primary'>{point.shortName || <Layout size={24} className="text-primary" />}</span>
+                                    </div>
+                                    <span style={{
+                                        fontSize: '0.75rem',
+                                        fontWeight: '600',
+                                        padding: '0.25rem 0.75rem',
+                                        borderRadius: '20px',
+                                        background: !point.temporaryClosed ? '#10b98115' : '#ef444415',
+                                        color: !point.temporaryClosed ? '#10b981' : '#ef4444',
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.05em'
+                                    }}>
+                                        {!point.temporaryClosed ? 'Active' : 'Closed'}
+                                    </span>
+                                </div>
+                                <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem' }}>{point.name}</h4>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                                        <Clock size={16} />
+                                        <span>{point.openTime} - {point.closeTime}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
+                                        <Briefcase size={14} style={{ color: 'var(--primary-color)' }} />
+                                        <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                                            {point.serviceCount} service(s) assigned
+                                        </span>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', justifyContent: 'flex-end' }}>
+                                        <button
+                                            className="icon-action-btn text-primary"
+                                            style={{ color: 'var(--primary-color)' }}
+                                            onClick={() => {
+                                                setSelectedPointForServices(point);
+                                                setIsManageServicesModalOpen(true);
+                                            }}
+                                        >
+                                            <Briefcase size={16} />
+                                        </button>
+                                        <button
+                                            className="icon-action-btn"
+                                            onClick={() => {
+                                                setSelectedPoint(point);
+                                                setIsPointModalOpen(true);
+                                            }}
+                                            title="Edit Details"
+                                        >
+                                            <Edit2 size={16} />
+                                        </button>
+                                        <button
+                                            className="icon-action-btn text-danger"
+                                            onClick={() => {
+                                                setPointToDelete(point);
+                                                setIsDeletePointDialogOpen(true);
+                                            }}
+                                            title="Delete"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '3rem', background: 'var(--hover-bg)', borderRadius: '12px', border: '1px dashed var(--border-color)' }}>
+                            <Layout size={40} style={{ color: 'var(--text-secondary)', marginBottom: '1rem', opacity: 0.5 }} />
+                            <p style={{ margin: 0, color: 'var(--text-secondary)' }}>No service points added yet.</p>
+                            <button
+                                onClick={() => setIsPointModalOpen(true)}
+                                style={{ background: 'none', border: 'none', color: 'var(--primary-color)', fontWeight: '600', cursor: 'pointer', marginTop: '0.5rem' }}
+                            >
+                                Create your first service point
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+
+    const renderClustersSection = () => (
+        <div className="tab-section-content">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <h4 style={{ margin: 0 }}>Active Service Workflows</h4>
+                <button
+                    className="primary-btn"
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                    onClick={() => setIsAssignClusterModalOpen(true)}
+                >
+                    Add Workflow
+                </button>
+            </div>
+
+            {clustersLoading ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: '1.5rem' }}>
+                    {[1, 2, 3].map(i => (
+                        <Skeleton key={i} variant="rectangular" width="100%" height={100} sx={{ borderRadius: '16px', bgcolor: 'rgba(255,255,255,0.05)' }} />
+                    ))}
+                </div>
+            ) : (
+                <>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: '1.5rem', marginBottom: selectedCluster ? '2rem' : '0' }}>
+                        {clusters.length > 0 ? (
+                            clusters.map(cluster => (
+                                <div
+                                    key={cluster.id}
+                                    className="stat-card"
+                                    onClick={() => handleClusterClick(cluster)}
+                                    style={{
+                                        padding: '1.5rem',
+                                        border: selectedCluster === cluster.id ? '2px solid var(--primary-color)' : '1px solid var(--border-color)',
+                                        borderRadius: '16px',
+                                        position: 'relative',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.3s ease',
+                                        background: selectedCluster === cluster.id ? 'rgba(37, 99, 235, 0.05)' : 'var(--card-bg)',
+                                        transform: selectedCluster === cluster.id ? 'translateY(-2px)' : 'none',
+                                        boxShadow: selectedCluster === cluster.id ? '0 8px 16px rgba(37, 99, 235, 0.15)' : 'none'
+                                    }}
+                                >
+                                    <button
+                                        className="icon-action-btn text-danger"
+                                        style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 10 }}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleRemoveClusterClick(cluster);
+                                        }}
+                                        title="Remove from center"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+
+                                    {clusterWarnings[cluster.id] && (
+                                        <button
+                                            className="icon-action-btn text-danger"
+                                            style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 10, marginRight: '2rem', color: '#f59e0b' }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setWarningModalData({
+                                                    clusterName: cluster.name,
+                                                    services: clusterWarnings[cluster.id]
+                                                });
+                                                setIsWarningModalOpen(true);
+                                            }}
+                                            title="View unassigned services"
+                                        >
+                                            <AlertTriangle size={16} />
+                                        </button>
+                                    )}
+
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingRight: '2rem' }}>
+                                        <div className="icon-box-primary" style={{
+                                            background: selectedCluster === cluster.id ? 'rgba(37, 99, 235, 0.2)' : 'rgba(37, 99, 235, 0.1)',
+                                            padding: '0.75rem',
+                                            borderRadius: '12px',
+                                            transition: 'all 0.3s ease'
+                                        }}>
+                                            <Layers size={24} className="text-primary" />
+                                        </div>
+                                        <h4 style={{ margin: '0', fontSize: '1.1rem' }}>{cluster.name}</h4>
+                                    </div>
+                                    <p style={{
+                                        fontSize: '0.75rem',
+                                        color: 'var(--text-secondary)',
+                                        marginTop: '0.75rem',
+                                        marginBottom: '0',
+                                        fontStyle: 'italic'
+                                    }}>
+                                        {selectedCluster === cluster.id ? 'Click to collapse' : 'Click to view services'}
+                                    </p>
+                                </div>
+                            ))
+                        ) : (
+                            <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '3rem', background: 'var(--hover-bg)', borderRadius: '12px', border: '1px dashed var(--border-color)' }}>
+                                <Layers size={40} style={{ color: 'var(--text-secondary)', marginBottom: '1rem', opacity: 0.5 }} />
+                                <p style={{ margin: 0, color: 'var(--text-secondary)' }}>No workflows found.</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {selectedCluster && (
+                        <div style={{
+                            marginTop: '2rem',
+                            padding: '1.5rem',
+                            background: 'var(--card-bg)',
+                            borderRadius: '16px',
+                            border: '1px solid var(--border-color)',
+                            animation: 'fadeIn 0.3s ease',
+                            minHeight: '400px'
+                        }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                                <h4 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <Briefcase size={20} className="text-primary" />
+                                    Workflow Services
+                                </h4>
+                                <span style={{
+                                    fontSize: '0.85rem',
+                                    color: 'var(--text-secondary)',
+                                    background: 'var(--hover-bg)',
+                                    padding: '0.5rem 1rem',
+                                    borderRadius: '8px'
+                                }}>
+                                    {clusterServicesLoading ? 'Loading...' : `${clusterServices.length} services`}
+                                </span>
+                            </div>
+
+                            {clusterServicesLoading ? (
+                                <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
+                                    <Loader2 className="animate-spin text-primary" size={32} />
+                                </div>
+                            ) : clusterServices.length > 0 ? (
+
+                                <div className="table-responsive">
+                                    <table className="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th className="mobile-hidden">Order</th>
+                                                <th>Service Name</th>
+                                                <th className="mobile-hidden">Service Time</th>
+                                                <th className="mobile-hidden">Total Price</th>
+                                                <th className="mobile-hidden">Down Payment</th>
+                                                <th className="mobile-hidden">Status</th>
+                                                <th style={{ textAlign: 'center' }}>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {clusterServices.map((service, index) => (
+                                                <tr key={index} style={{
+                                                    opacity: service.disabled ? 0.6 : 1,
+                                                    background: service.disabled ? 'var(--hover-bg)' : 'transparent'
+                                                }}>
+                                                    <td className="mobile-hidden">
+                                                        <span style={{
+                                                            display: 'inline-flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            width: '32px',
+                                                            height: '32px',
+                                                            borderRadius: '8px',
+                                                            background: 'rgba(37, 99, 235, 0.1)',
+                                                            color: 'var(--primary-color)',
+                                                            fontWeight: '600',
+                                                            fontSize: '0.9rem'
+                                                        }}>
+                                                            {service.orderNumber}
+                                                        </span>
+                                                    </td>
+                                                    <td className="font-medium">{service.service}</td>
+                                                    <td className="mobile-hidden">
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                            <Clock size={14} style={{ color: 'var(--text-secondary)' }} />
+                                                            <span>{service.serviceTime}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="mobile-hidden">
+                                                        <span style={{
+                                                            fontWeight: '600',
+                                                            color: 'var(--primary-color)'
+                                                        }}>
+                                                            Rs. {service.total.toLocaleString()}
+                                                        </span>
+                                                    </td>
+                                                    <td className="mobile-hidden">
+                                                        <span style={{ color: service.downPay > 0 ? '#10b981' : 'var(--text-secondary)' }}>
+                                                            Rs. {service.downPay.toLocaleString()}
+                                                        </span>
+                                                    </td>
+                                                    <td className="mobile-hidden">
+                                                        <span style={{
+                                                            fontSize: '0.75rem',
+                                                            fontWeight: '600',
+                                                            padding: '0.35rem 0.75rem',
+                                                            borderRadius: '20px',
+                                                            background: service.disabled ? '#ef444415' : '#10b98115',
+                                                            color: service.disabled ? '#ef4444' : '#10b981',
+                                                            textTransform: 'uppercase',
+                                                            letterSpacing: '0.05em'
+                                                        }}>
+                                                            {service.disabled ? 'Disabled' : 'Active'}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                                                            <button
+                                                                className="icon-action-btn text-primary"
+                                                                onClick={() => handleEditClusterService(service)}
+                                                                title="Edit Service"
+                                                                style={{
+                                                                    transition: 'all 0.2s ease'
+                                                                }}
+                                                            >
+                                                                <Edit2 size={16} />
+                                                            </button>
+                                                            <button
+                                                                className="icon-action-btn"
+                                                                onClick={() => handleToggleServiceStatus(service)}
+                                                                title={service.disabled ? 'Enable Service' : 'Disable Service'}
+                                                                style={{
+                                                                    color: service.disabled ? '#10b981' : '#ef4444',
+                                                                    transition: 'all 0.2s ease'
+                                                                }}
+                                                            >
+                                                                {service.disabled ? (
+                                                                    <CheckCircle size={16} />
+                                                                ) : (
+                                                                    <Ban size={16} />
+                                                                )}
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            ) : (
+                                <div style={{ textAlign: 'center', padding: '3rem', background: 'var(--hover-bg)', borderRadius: '12px', border: '1px dashed var(--border-color)' }}>
+                                    <Briefcase size={40} style={{ color: 'var(--text-secondary)', marginBottom: '1rem', opacity: 0.5 }} />
+                                    <p style={{ margin: 0, color: 'var(--text-secondary)' }}>No services found for this cluster.</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </>
+            )}
+        </div>
+    );
+
     // Dummy Data for rest of the tabs
     const dummyServicePoints = [
         { id: 1, name: "Counter 01", type: "Standard", status: "Open" },
@@ -419,8 +849,45 @@ const ServiceCenter = () => {
 
     if (loading) {
         return (
-            <div className="page-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
-                <Loader2 className="animate-spin text-primary" size={40} />
+            <div className="page-container">
+                <div className="page-header">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <Skeleton variant="circular" width={40} height={40} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                        <div>
+                            <Skeleton variant="text" width="60%" height={32} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                            <Skeleton variant="text" width="80%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="service-center-detail-grid">
+                    <div className="content-card">
+                        <Skeleton variant="text" width="40%" height={24} sx={{ marginBottom: '1.5rem', bgcolor: 'rgba(255,255,255,0.1)' }} />
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                            {[1, 2, 3, 4].map(i => (
+                                <div key={i} style={{ display: 'flex', gap: '0.75rem' }}>
+                                    <Skeleton variant="circular" width={18} height={18} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                    <div style={{ flex: 1 }}>
+                                        <Skeleton variant="text" width="30%" height={14} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                        <Skeleton variant="text" width="80%" sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="content-card">
+                        <div className="tabs" style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid var(--border-color)', marginBottom: '1.5rem', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                            {[1, 2, 3].map(i => (
+                                <Skeleton key={i} variant="text" width={80} height={40} sx={{ bgcolor: 'rgba(255,255,255,0.1)', flexShrink: 0 }} />
+                            ))}
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                            <Skeleton variant="text" width="40%" height={24} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                            <Skeleton variant="rounded" width="30%" height={40} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                        </div>
+                        <Skeleton variant="rectangular" width="100%" height={200} sx={{ borderRadius: '8px', bgcolor: 'rgba(255,255,255,0.1)' }} />
+                    </div>
+                </div>
             </div>
         );
     }
@@ -455,9 +922,9 @@ const ServiceCenter = () => {
                 )}
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) 3fr', gap: '2rem', marginTop: '1.5rem' }}>
+            <div className="service-center-detail-grid">
                 {/* Sidebar Details Card */}
-                <div className="content-card" style={{ height: 'fit-content', position: 'sticky', top: '2rem' }}>
+                <div className="content-card center-info-sidebar">
                     <h4 style={{ marginBottom: '1.5rem', color: 'var(--primary-color)' }}>General Info</h4>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                         <div style={{ display: 'flex', gap: '0.75rem' }}>
@@ -494,8 +961,9 @@ const ServiceCenter = () => {
                 </div>
 
                 {/* Main Content Tabs */}
-                <div className="content-card">
-                    <div className="tabs" style={{ display: 'flex', gap: '2rem', borderBottom: '1px solid var(--border-color)', marginBottom: '1.5rem' }}>
+                {/* Desktop View - Tabbed Content */}
+                <div className="content-card mobile-hidden">
+                    <div className="tabs" style={{ display: 'flex', gap: '2rem', borderBottom: '1px solid var(--border-color)', marginBottom: '1.5rem', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
                         <button
                             className={`tab-btn ${activeTab === 'employees' ? 'active' : ''}`}
                             onClick={() => setActiveTab('employees')}
@@ -509,7 +977,8 @@ const ServiceCenter = () => {
                                 cursor: 'pointer',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '0.5rem'
+                                gap: '0.5rem',
+                                flexShrink: 0
                             }}
                         >
                             <Users size={18} />
@@ -528,7 +997,8 @@ const ServiceCenter = () => {
                                 cursor: 'pointer',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '0.5rem'
+                                gap: '0.5rem',
+                                flexShrink: 0
                             }}
                         >
                             <Layout size={18} />
@@ -547,463 +1017,32 @@ const ServiceCenter = () => {
                                 cursor: 'pointer',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '0.5rem'
+                                gap: '0.5rem',
+                                flexShrink: 0
                             }}
                         >
                             <Layers size={18} />
-                            Service Clusters
+                            Service Workflows
                         </button>
                     </div>
 
                     <div className="tab-content">
-                        {activeTab === 'employees' && (
-                            <div className="tab-section-content">
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                                    <h4 style={{ margin: 0 }}></h4>
-                                    <button
-                                        className="primary-btn"
-                                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                                        onClick={() => setIsAssignModalOpen(true)}
-                                    >
-                                        <UserPlus size={18} />
-                                        Assign Employee
-                                    </button>
-                                </div>
+                        {activeTab === 'employees' && renderEmployeesSection()}
+                        {activeTab === 'points' && renderPointsSection()}
+                        {activeTab === 'clusters' && renderClustersSection()}
+                    </div>
+                </div>
 
-                                <div className="table-responsive">
-                                    <table className="data-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Name</th>
-                                                <th>Role</th>
-                                                <th>Email</th>
-                                                <th>Contact</th>
-                                                {/* <th>Status</th> */}
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {employees.length > 0 ? (
-                                                employees.map(emp => (
-                                                    <tr key={emp.userId}>
-                                                        <td className="font-medium">{emp.userName}</td>
-                                                        <td>{emp.role?.name || emp.role || 'N/A'}</td>
-                                                        <td>{emp.email}</td>
-                                                        <td>
-                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                                {emp.contact}
-                                                                <button
-                                                                    className="icon-action-btn text-danger"
-                                                                    title="Remove from Center"
-                                                                    onClick={() => {
-                                                                        setEmployeeToRemove(emp);
-                                                                        setIsRemoveDialogOpen(true);
-                                                                    }}
-                                                                >
-                                                                    <Trash2 size={16} />
-                                                                </button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))
-                                            ) : (
-                                                <tr>
-                                                    <td colSpan="4" className="text-center" style={{ padding: '2rem', color: '#94a3b8' }}>
-                                                        No employees assigned to this center.
-                                                    </td>
-                                                </tr>
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        )}
-
-                        {activeTab === 'points' && (
-                            <div className="tab-section-content">
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                                    <h4 style={{ margin: 0 }}>Active Service Points</h4>
-                                    <button
-                                        className="primary-btn"
-                                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                                        onClick={() => {
-                                            setSelectedPoint(null);
-                                            setIsPointModalOpen(true);
-                                        }}
-                                    >
-                                        <Layout size={18} />
-                                        Add Service Point
-                                    </button>
-                                </div>
-
-                                {pointsLoading ? (
-                                    <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
-                                        <Loader2 className="animate-spin text-primary" size={32} />
-                                    </div>
-                                ) : (
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
-                                        {servicePoints.length > 0 ? (
-                                            servicePoints.map(point => (
-                                                <div key={point.id} className="stat-card" style={{ padding: '1.5rem', border: '1px solid var(--border-color)', borderRadius: '16px', position: 'relative', overflow: 'hidden' }}>
-                                                    <div style={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', background: !point.temporaryClosed ? '#10b981' : '#ef4444' }}></div>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                                                        <div className="icon-box-primary" style={{ background: 'rgba(37, 99, 235, 0.1)', padding: '0.75rem', borderRadius: '12px' }}>
-                                                            {/* <Layout size={24} className="text-primary" /> */}
-                                                            <span className='text-primary'>{point.shortName || <Layout size={24} className="text-primary" />}</span>
-                                                        </div>
-                                                        <span style={{
-                                                            fontSize: '0.75rem',
-                                                            fontWeight: '600',
-                                                            padding: '0.25rem 0.75rem',
-                                                            borderRadius: '20px',
-                                                            background: !point.temporaryClosed ? '#10b98115' : '#ef444415',
-                                                            color: !point.temporaryClosed ? '#10b981' : '#ef4444',
-                                                            textTransform: 'uppercase',
-                                                            letterSpacing: '0.05em'
-                                                        }}>
-                                                            {!point.temporaryClosed ? 'Active' : 'Closed'}
-                                                        </span>
-                                                    </div>
-                                                    <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem' }}>{point.name}</h4>
-                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                                                            <Clock size={16} />
-                                                            <span>{point.openTime} - {point.closeTime}</span>
-                                                        </div>
-                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
-                                                            <Briefcase size={14} style={{ color: 'var(--primary-color)' }} />
-                                                            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                                                                {point.serviceCount} service(s) assigned
-                                                            </span>
-                                                        </div>
-                                                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', justifyContent: 'flex-end' }}>
-                                                            <button
-                                                                className="icon-action-btn text-primary"
-                                                                style={{ color: 'var(--primary-color)' }}
-                                                                onClick={() => {
-                                                                    setSelectedPointForServices(point);
-                                                                    setIsManageServicesModalOpen(true);
-                                                                }}
-                                                            >
-                                                                <Briefcase size={16} />
-                                                            </button>
-                                                            <button
-                                                                className="icon-action-btn"
-                                                                onClick={() => {
-                                                                    setSelectedPoint(point);
-                                                                    setIsPointModalOpen(true);
-                                                                }}
-                                                                title="Edit Details"
-                                                            >
-                                                                <Edit2 size={16} />
-                                                            </button>
-                                                            <button
-                                                                className="icon-action-btn text-danger"
-                                                                onClick={() => {
-                                                                    setPointToDelete(point);
-                                                                    setIsDeletePointDialogOpen(true);
-                                                                }}
-                                                                title="Delete"
-                                                            >
-                                                                <Trash2 size={16} />
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '3rem', background: 'var(--hover-bg)', borderRadius: '12px', border: '1px dashed var(--border-color)' }}>
-                                                <Layout size={40} style={{ color: 'var(--text-secondary)', marginBottom: '1rem', opacity: 0.5 }} />
-                                                <p style={{ margin: 0, color: 'var(--text-secondary)' }}>No service points added yet.</p>
-                                                <button
-                                                    onClick={() => setIsPointModalOpen(true)}
-                                                    style={{ background: 'none', border: 'none', color: 'var(--primary-color)', fontWeight: '600', cursor: 'pointer', marginTop: '0.5rem' }}
-                                                >
-                                                    Create your first service point
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        {activeTab === 'clusters' && (
-                            <div className="tab-section-content">
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                                    <h4 style={{ margin: 0 }}>Active Service Clusters</h4>
-                                    <button
-                                        className="primary-btn"
-                                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                                        onClick={() => setIsAssignClusterModalOpen(true)}
-                                    >
-                                        Add Cluster
-                                    </button>
-                                </div>
-
-                                {clustersLoading ? (
-                                    <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
-                                        <Loader2 className="animate-spin text-primary" size={32} />
-                                    </div>
-                                ) : (
-                                    <>
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: selectedCluster ? '2rem' : '0' }}>
-                                            {clusters.length > 0 ? (
-                                                clusters.map(cluster => (
-                                                    <div
-                                                        key={cluster.id}
-                                                        className="stat-card"
-                                                        onClick={() => handleClusterClick(cluster)}
-                                                        style={{
-                                                            padding: '1.5rem',
-                                                            border: selectedCluster === cluster.id ? '2px solid var(--primary-color)' : '1px solid var(--border-color)',
-                                                            borderRadius: '16px',
-                                                            position: 'relative',
-                                                            cursor: 'pointer',
-                                                            transition: 'all 0.3s ease',
-                                                            background: selectedCluster === cluster.id ? 'rgba(37, 99, 235, 0.05)' : 'var(--card-bg)',
-                                                            transform: selectedCluster === cluster.id ? 'translateY(-2px)' : 'none',
-                                                            boxShadow: selectedCluster === cluster.id ? '0 8px 16px rgba(37, 99, 235, 0.15)' : 'none'
-                                                        }}
-                                                    >
-                                                        <button
-                                                            className="icon-action-btn text-danger"
-                                                            style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 10 }}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleRemoveClusterClick(cluster);
-                                                            }}
-                                                            title="Remove from center"
-                                                        >
-                                                            <Trash2 size={16} />
-                                                        </button>
-
-                                                        {clusterWarnings[cluster.id] && (
-                                                            <button
-                                                                className="icon-action-btn text-danger"
-                                                                style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 10, marginRight: '2rem', color: '#f59e0b' }}
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    setWarningModalData({
-                                                                        clusterName: cluster.name,
-                                                                        services: clusterWarnings[cluster.id]
-                                                                    });
-                                                                    setIsWarningModalOpen(true);
-                                                                }}
-                                                                title="View unassigned services"
-                                                            >
-                                                                <AlertTriangle size={16} />
-                                                            </button>
-                                                        )}
-
-                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingRight: '2rem' }}>
-                                                            <div className="icon-box-primary" style={{
-                                                                background: selectedCluster === cluster.id ? 'rgba(37, 99, 235, 0.2)' : 'rgba(37, 99, 235, 0.1)',
-                                                                padding: '0.75rem',
-                                                                borderRadius: '12px',
-                                                                transition: 'all 0.3s ease'
-                                                            }}>
-                                                                <Layers size={24} className="text-primary" />
-                                                            </div>
-                                                            <h4 style={{ margin: '0', fontSize: '1.1rem' }}>{cluster.name}</h4>
-                                                        </div>
-                                                        <p style={{
-                                                            fontSize: '0.75rem',
-                                                            color: 'var(--text-secondary)',
-                                                            marginTop: '0.75rem',
-                                                            marginBottom: '0',
-                                                            fontStyle: 'italic'
-                                                        }}>
-                                                            {selectedCluster === cluster.id ? 'Click to collapse' : 'Click to view services'}
-                                                        </p>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '3rem', background: 'var(--hover-bg)', borderRadius: '12px', border: '1px dashed var(--border-color)' }}>
-                                                    <Layers size={40} style={{ color: 'var(--text-secondary)', marginBottom: '1rem', opacity: 0.5 }} />
-                                                    <p style={{ margin: 0, color: 'var(--text-secondary)' }}>No clusters found.</p>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* Services Table - Shows when a cluster is selected */}
-                                        {selectedCluster && (
-                                            <div style={{
-                                                marginTop: '2rem',
-                                                padding: '1.5rem',
-                                                background: 'var(--card-bg)',
-                                                borderRadius: '16px',
-                                                border: '1px solid var(--border-color)',
-                                                animation: 'fadeIn 0.3s ease',
-                                                minHeight: '400px'
-                                            }}>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                                                    <h4 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                        <Briefcase size={20} className="text-primary" />
-                                                        Cluster Services
-                                                    </h4>
-                                                    <span style={{
-                                                        fontSize: '0.85rem',
-                                                        color: 'var(--text-secondary)',
-                                                        background: 'var(--hover-bg)',
-                                                        padding: '0.5rem 1rem',
-                                                        borderRadius: '8px'
-                                                    }}>
-                                                        {clusterServicesLoading ? 'Loading...' : `${clusterServices.length} services`}
-                                                    </span>
-                                                </div>
-
-                                                {clusterServicesLoading ? (
-                                                    <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
-                                                        <Loader2 className="animate-spin text-primary" size={32} />
-                                                    </div>
-                                                ) : clusterServices.length > 0 ? (
-
-                                                    <div className="table-responsive">
-                                                        <table className="data-table">
-                                                            <thead>
-                                                                <tr>
-                                                                    <th>Order</th>
-                                                                    <th>Service Name</th>
-                                                                    <th>Service Time</th>
-                                                                    <th>Total Price</th>
-                                                                    <th>Down Payment</th>
-                                                                    <th>Status</th>
-                                                                    <th style={{ textAlign: 'center' }}>Actions</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                {clusterServices.map((service, index) => (
-                                                                    <tr key={index} style={{
-                                                                        opacity: service.disabled ? 0.6 : 1,
-                                                                        background: service.disabled ? 'var(--hover-bg)' : 'transparent'
-                                                                    }}>
-                                                                        <td>
-                                                                            <span style={{
-                                                                                display: 'inline-flex',
-                                                                                alignItems: 'center',
-                                                                                justifyContent: 'center',
-                                                                                width: '32px',
-                                                                                height: '32px',
-                                                                                borderRadius: '8px',
-                                                                                background: 'rgba(37, 99, 235, 0.1)',
-                                                                                color: 'var(--primary-color)',
-                                                                                fontWeight: '600',
-                                                                                fontSize: '0.9rem'
-                                                                            }}>
-                                                                                {service.orderNumber}
-                                                                            </span>
-                                                                        </td>
-                                                                        <td className="font-medium">{service.service}</td>
-                                                                        <td>
-                                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                                                <Clock size={14} style={{ color: 'var(--text-secondary)' }} />
-                                                                                <span>{service.serviceTime}</span>
-                                                                            </div>
-                                                                        </td>
-                                                                        <td>
-                                                                            <span style={{
-                                                                                fontWeight: '600',
-                                                                                color: 'var(--primary-color)'
-                                                                            }}>
-                                                                                Rs. {service.total.toLocaleString()}
-                                                                            </span>
-                                                                        </td>
-                                                                        <td>
-                                                                            <span style={{ color: service.downPay > 0 ? '#10b981' : 'var(--text-secondary)' }}>
-                                                                                Rs. {service.downPay.toLocaleString()}
-                                                                            </span>
-                                                                        </td>
-                                                                        <td>
-                                                                            <span style={{
-                                                                                fontSize: '0.75rem',
-                                                                                fontWeight: '600',
-                                                                                padding: '0.35rem 0.75rem',
-                                                                                borderRadius: '20px',
-                                                                                background: service.disabled ? '#ef444415' : '#10b98115',
-                                                                                color: service.disabled ? '#ef4444' : '#10b981',
-                                                                                textTransform: 'uppercase',
-                                                                                letterSpacing: '0.05em'
-                                                                            }}>
-                                                                                {service.disabled ? 'Disabled' : 'Active'}
-                                                                            </span>
-                                                                        </td>
-                                                                        <td>
-                                                                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                                                                                <button
-                                                                                    className="icon-action-btn text-primary"
-                                                                                    onClick={() => handleEditClusterService(service)}
-                                                                                    title="Edit Service"
-                                                                                    style={{
-                                                                                        // color: 'var(--primary-color)',
-                                                                                        transition: 'all 0.2s ease'
-                                                                                    }}
-                                                                                >
-                                                                                    <Edit2 size={16} />
-                                                                                </button>
-                                                                                <button
-                                                                                    className="icon-action-btn"
-                                                                                    onClick={() => handleToggleServiceStatus(service)}
-                                                                                    title={service.disabled ? 'Enable Service' : 'Disable Service'}
-                                                                                    style={{
-                                                                                        color: service.disabled ? '#10b981' : '#ef4444',
-                                                                                        transition: 'all 0.2s ease'
-                                                                                    }}
-                                                                                >
-                                                                                    {service.disabled ? (
-                                                                                        <CheckCircle size={16} />
-                                                                                    ) : (
-                                                                                        <Ban size={16} />
-                                                                                    )}
-                                                                                </button>
-                                                                                {/* <button
-                                                                                    className="icon-action-btn"
-                                                                                    onClick={() => handleMoveService(index, 'up')}
-                                                                                    disabled={index === 0}
-                                                                                    title="Move Up"
-                                                                                    style={{
-                                                                                        color: index === 0 ? 'var(--text-secondary)' : 'var(--primary-color)',
-                                                                                        opacity: index === 0 ? 0.3 : 1,
-                                                                                        cursor: index === 0 ? 'not-allowed' : 'pointer',
-                                                                                        transition: 'all 0.2s ease'
-                                                                                    }}
-                                                                                >
-                                                                                    <ArrowUp size={16} />
-                                                                                </button>
-                                                                                <button
-                                                                                    className="icon-action-btn"
-                                                                                    onClick={() => handleMoveService(index, 'down')}
-                                                                                    disabled={index === clusterServices.length - 1}
-                                                                                    title="Move Down"
-                                                                                    style={{
-                                                                                        color: index === clusterServices.length - 1 ? 'var(--text-secondary)' : 'var(--primary-color)',
-                                                                                        opacity: index === clusterServices.length - 1 ? 0.3 : 1,
-                                                                                        cursor: index === clusterServices.length - 1 ? 'not-allowed' : 'pointer',
-                                                                                        transition: 'all 0.2s ease'
-                                                                                    }}
-                                                                                >
-                                                                                    <ArrowDown size={16} />
-                                                                                </button> */}
-                                                                            </div>
-                                                                        </td>
-                                                                    </tr>
-                                                                ))}
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-
-                                                ) : (
-                                                    <div style={{ textAlign: 'center', padding: '3rem', background: 'var(--hover-bg)', borderRadius: '12px', border: '1px dashed var(--border-color)' }}>
-                                                        <Briefcase size={40} style={{ color: 'var(--text-secondary)', marginBottom: '1rem', opacity: 0.5 }} />
-                                                        <p style={{ margin: 0, color: 'var(--text-secondary)' }}>No services found for this cluster.</p>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-                                    </>
-                                )}
-                            </div>
-                        )}
-
+                {/* Mobile View - Vertical Card Stacking */}
+                <div className="desktop-hidden" style={{ flexDirection: 'column', gap: '1.5rem', width: '100%' }}>
+                    <div className="content-card">
+                        {renderEmployeesSection()}
+                    </div>
+                    <div className="content-card">
+                        {renderPointsSection()}
+                    </div>
+                    <div className="content-card">
+                        {renderClustersSection()}
                     </div>
                 </div>
             </div>
@@ -1097,8 +1136,8 @@ const ServiceCenter = () => {
                     }
                 }}
                 onConfirm={confirmRemoveCluster}
-                title="Remove Cluster"
-                message={`Are you sure you want to remove the cluster "${clusterToRemove?.name}" from this center?`}
+                title="Remove Workflow"
+                message={`Are you sure you want to remove the workflow "${clusterToRemove?.name}" from this center?`}
                 confirmText={isRemovingCluster ? "Removing..." : "Remove"}
                 type="danger"
             />

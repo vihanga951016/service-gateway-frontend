@@ -326,13 +326,13 @@ const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
         const jobsAtPoint = timelineData?.jobsAtPoint || [];
 
         return (
-            <div className="timeline-view" style={{ padding: '1.5rem', minHeight: '400px', animation: 'fadeIn 0.3s ease-in-out' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <div className="timeline-view" style={{ padding: window.innerWidth < 768 ? '1rem' : '1.5rem', minHeight: '400px', animation: 'fadeIn 0.3s ease-in-out' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem', gap: '1rem', flexDirection: window.innerWidth < 576 ? 'column' : 'row' }}>
                     <div>
                         <h5 style={{ color: 'var(--primary-color)', fontSize: '1.1rem', fontWeight: '600', marginBottom: '4px' }}>Proposed Job Schedule</h5>
                         <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Review the suggested schedule for the requested services</p>
                     </div>
-                    <div style={{ fontSize: '0.85rem', background: 'rgba(37, 99, 235, 0.1)', color: 'var(--primary-color)', padding: '6px 14px', borderRadius: '20px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ fontSize: '0.85rem', background: 'rgba(37, 99, 235, 0.1)', color: 'var(--primary-color)', padding: '6px 14px', borderRadius: '20px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
                         <CalendarIcon size={14} />
                         {timelineData?.appointmentDate || formData.appointmentDate || 'Today'}
                     </div>
@@ -373,7 +373,8 @@ const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
                                         justifyContent: 'center',
                                         marginTop: '4px',
                                         flexShrink: 0,
-                                        boxShadow: '0 0 0 4px var(--modal-bg)'
+                                        boxShadow: '0 0 0 4px var(--modal-bg)',
+                                        left: window.innerWidth < 768 ? '-11px' : '0'
                                     }}>
                                         <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary-color)' }} />
                                     </div>
@@ -382,25 +383,27 @@ const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
                                     <div style={{
                                         flex: 1,
                                         background: isNewJob ? 'rgba(37, 99, 235, 0.05)' : 'rgba(0,0,0,0.02)',
-                                        padding: '1rem',
+                                        padding: window.innerWidth < 768 ? '0.75rem' : '1rem',
                                         borderRadius: '12px',
                                         border: isNewJob ? '1px dashed var(--primary-color)' : '1px solid var(--border-color)',
                                         display: 'flex',
                                         justifyContent: 'space-between',
                                         alignItems: 'center',
+                                        flexDirection: window.innerWidth < 480 ? 'column' : 'row',
+                                        gap: '0.5rem',
                                         transition: 'all 0.2s',
                                         cursor: 'pointer'
                                     }}
                                         onMouseEnter={(e) => e.currentTarget.style.background = isNewJob ? 'rgba(37, 99, 235, 0.08)' : 'rgba(0,0,0,0.04)'}
                                         onMouseLeave={(e) => e.currentTarget.style.background = isNewJob ? 'rgba(37, 99, 235, 0.05)' : 'rgba(0,0,0,0.02)'}
                                     >
-                                        <div>
+                                        <div style={{ width: '100%' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                                                 <span style={{ fontWeight: '700', fontSize: '0.95rem', color: isNewJob ? 'var(--primary-color)' : 'var(--text-primary)' }}>
                                                     {service.name || 'Service'}
                                                 </span>
                                             </div>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.85rem', color: '#10b981' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.85rem', color: '#10b981', flexWrap: 'wrap' }}>
                                                 <span className="text-success" style={{ fontSize: '0.75rem', background: 'rgba(37, 99, 235, 0.1)', padding: '2px 8px', borderRadius: '4px', fontWeight: '600' }}>
                                                     {servicePoint.name || 'TBD'}
                                                 </span>
@@ -409,7 +412,7 @@ const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
                                                 )}
                                             </div>
                                         </div>
-                                        <div style={{ textAlign: 'right' }}>
+                                        <div style={{ textAlign: window.innerWidth < 480 ? 'left' : 'right', width: window.innerWidth < 480 ? '100%' : 'auto' }}>
                                             <div style={{ fontWeight: '600', fontSize: '0.9rem', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                                                 <Clock size={14} style={{ color: 'var(--primary-color)' }} />
                                                 {startTime?.substring(0, 5)} - {endTime?.substring(0, 5)}
@@ -437,11 +440,11 @@ const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
     return (
         <div className="modal-overlay" onClick={handleModalClose}>
             <div
-                className="modal-content"
+                className="modal-content create-job-modal"
                 onClick={(e) => e.stopPropagation()}
                 style={{
                     maxWidth: '700px',
-                    width: '90%',
+                    width: 'min(700px, 95vw)',
                     background: 'var(--modal-bg)',
                     boxShadow: 'var(--card-shadow)',
                     border: '1px solid var(--border-color)',
@@ -471,12 +474,12 @@ const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit}>
-                    <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                <form onSubmit={handleSubmit} style={{ maxHeight: '75vh', overflowY: 'auto' }}>
+                    <div className="modal-body">
                         {!showTimeline ? (
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                            <div className="form-grid">
                                 {/* Customer Section */}
-                                <div style={{ gridColumn: 'span 2' }}>
+                                <div className="full-width">
                                     <h5 style={{ marginBottom: '1rem', color: 'var(--primary-color)', fontSize: '0.9rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Customer Information</h5>
                                 </div>
 
@@ -519,7 +522,7 @@ const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
                                 </div> */}
 
                                 {/* Service Section */}
-                                <div style={{ gridColumn: 'span 2', marginTop: '1rem' }}>
+                                <div className="full-width" style={{ marginTop: '1rem' }}>
                                     <h5 style={{ marginBottom: '1rem', color: 'var(--primary-color)', fontSize: '0.9rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Service Details</h5>
                                 </div>
 
@@ -539,7 +542,7 @@ const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
                                     </select>
                                 </div>
 
-                                <div className="form-group" style={{ gridColumn: 'span 2', display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.5rem' }}>
+                                <div className="form-group full-width" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.5rem' }}>
                                     <label className="checkbox-label" style={{ color: 'var(--text-primary)', fontWeight: '500' }}>
                                         <input
                                             type="checkbox"
@@ -568,7 +571,7 @@ const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
                                         </select>
                                     </div>
                                 ) : (
-                                    <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                                    <div className="form-group full-width">
                                         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}><ClipboardList size={14} /> Custom Services</label>
                                         <div className="custom-dropdown" ref={dropdownRef}>
                                             <div
@@ -650,11 +653,11 @@ const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
 
 
                                 {/* Schedule Section */}
-                                <div style={{ gridColumn: 'span 2', marginTop: '1rem' }}>
+                                <div className="full-width" style={{ marginTop: '1rem' }}>
                                     <h5 style={{ marginBottom: '1rem', color: 'var(--primary-color)', fontSize: '0.9rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Schedule</h5>
                                 </div>
 
-                                <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                                <div className="form-group full-width">
                                     <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}><CalendarIcon size={14} /> Appointment Date</label>
                                     <ConfigProvider
                                         theme={{
@@ -723,7 +726,7 @@ const CreateJobModal = ({ isOpen, onClose, onJobCreated }) => {
                                     </ConfigProvider>
                                 </div>
 
-                                <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                                <div className="form-group full-width">
                                     <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}><MessageSquare size={14} /> Observations / Notes</label>
                                     <textarea
                                         name="description"
