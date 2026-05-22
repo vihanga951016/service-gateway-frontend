@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Search, ChevronLeft, ChevronRight, User, Phone, Mail, FileText, Briefcase, CheckCircle, Clock, Edit2, Trash2, ShieldCheck, ShieldAlert } from 'lucide-react';
+import { Plus, Search, ChevronLeft, ChevronRight, User, Phone, Mail, FileText, Briefcase, CheckCircle, Clock, Edit2, Trash2, ShieldCheck, ShieldAlert, Bell } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { getConfig } from '../config';
 import ConfirmDialog from '../components/ConfirmDialog';
 import InfoModal from '../components/InfoModal';
 import UserModal from '../components/UserModal';
+import NotificationAccessModal from '../components/NotificationAccessModal';
 import { Skeleton } from '@mui/material';
 import '../App.css';
 import { useNavigate } from 'react-router-dom';
@@ -35,6 +36,10 @@ const Users = () => {
     // Add User Modal State
     const [isUserModalOpen, setIsUserModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
+
+    // Notification Access Modal State
+    const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+    const [selectedUserForNotification, setSelectedUserForNotification] = useState(null);
 
     // Info Modal State
     const [infoModal, setInfoModal] = useState({
@@ -222,6 +227,11 @@ const Users = () => {
     };
 
 
+    const handleNotificationAccessClick = (user) => {
+        setSelectedUserForNotification(user);
+        setIsNotificationModalOpen(true);
+    };
+
     const handleDeleteClick = (user) => {
         setUserToDelete(user);
         setIsDeleteDialogOpen(true);
@@ -372,6 +382,15 @@ const Users = () => {
                 onClose={() => setInfoModal({ ...infoModal, isOpen: false })}
                 title={infoModal.title}
                 content={infoModal.content}
+            />
+
+            <NotificationAccessModal
+                isOpen={isNotificationModalOpen}
+                onClose={() => {
+                    setIsNotificationModalOpen(false);
+                    setSelectedUserForNotification(null);
+                }}
+                user={selectedUserForNotification}
             />
 
             <UserModal
@@ -562,6 +581,13 @@ const Users = () => {
                                                     </div>
                                                 )}
 
+                                                <button
+                                                    className="icon-action-btn text-info"
+                                                    title="Notification Access"
+                                                    onClick={() => handleNotificationAccessClick(user)}
+                                                >
+                                                    <Bell size={16} />
+                                                </button>
                                                 <button
                                                     className="icon-action-btn"
                                                     title="Edit"

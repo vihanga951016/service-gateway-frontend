@@ -11,7 +11,8 @@ export const UserProvider = ({ children }) => {
         email: '',
         userType: '',
         provider: '',
-        providerId: ''
+        providerId: '',
+        userId: ''
     });
     const [permissions, setPermissions] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -37,7 +38,8 @@ export const UserProvider = ({ children }) => {
                     email: userData.email || '',
                     userType: userData.userType || 'User',
                     provider: userData.serviceCenter || '',
-                    providerId: userData.providerId || ''
+                    providerId: userData.providerId || '',
+                    userId: userData.userId || userData.id || ''
                 });
 
                 if (userPermissions) {
@@ -89,7 +91,8 @@ export const UserProvider = ({ children }) => {
                     email: userData.email || '',
                     userType: userData.userType || 'User',
                     provider: userData.serviceCenter || '',
-                    providerId: userData.providerId || ''
+                    providerId: userData.providerId || '',
+                    userId: userData.userId || userData.id || ''
                 });
                 setPermissions(userPermissions);
             } finally {

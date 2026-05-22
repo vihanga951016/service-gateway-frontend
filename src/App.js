@@ -24,7 +24,7 @@ import './App.css';
 function App() {
   return (
     <ThemeProvider>
-      <ToastContainer position="bottom-right" autoClose={3000} theme="colored" />
+      <ToastContainer position="bottom-right" autoClose={3000} theme="light" hideProgressBar closeButton={false} />
         <Router basename="/service-gateway">
           <Routes>
             <Route path="/login" element={<Login />} />

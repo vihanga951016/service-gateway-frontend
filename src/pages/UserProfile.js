@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mail, Phone, FileText, Shield, MapPin, Edit2, Calendar, User, Camera, X, Save, Lock, Briefcase } from 'lucide-react';
+import { Mail, Phone, FileText, Shield, MapPin, Edit2, Calendar, User, Camera, X, Save, Lock, Briefcase, Bell, BellOff, RotateCcw, Loader2 } from 'lucide-react';
 import '../App.css';
 import axios from 'axios';
 import { getConfig } from '../config';
@@ -31,12 +31,17 @@ const UserProfile = () => {
     const [roles, setRoles] = useState([]);
     const [isLoadingRoles, setIsLoadingRoles] = useState(false);
     const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+    const [notifications, setNotifications] = useState([]);
+    const [originalNotifications, setOriginalNotifications] = useState([]);
+    const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
+    const [isSavingNotifications, setIsSavingNotifications] = useState(false);
 
     const fetchInitiated = useRef(false);
 
     useEffect(() => {
         if (!fetchInitiated.current) {
             fetchUserProfile();
+            fetchNotifications();
             fetchInitiated.current = true;
         }
     }, []);
@@ -84,6 +89,105 @@ const UserProfile = () => {
             }
         } finally {
             setIsLoadingProfile(false);
+        }
+    };
+
+    const fetchNotifications = async () => {
+        setIsLoadingNotifications(true);
+        try {
+            const baseUrl = getConfig().baseUrl;
+            const token = localStorage.getItem('token');
+            const response = await axios.get(`${baseUrl}/notification-access/user-assigned`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (response.data && response.data.data) {
+                const assignedNotifications = response.data.data.map(notification => ({
+                    ...notification,
+                    disabled: Boolean(notification.disabled)
+                }));
+                setNotifications(assignedNotifications);
+                setOriginalNotifications(assignedNotifications);
+            }
+        } catch (error) {
+            if (error?.response?.data?.code === 1) {
+                toast.info("Session expired. Please login again.");
+                navigate('/login');
+            } else if (error?.response?.data?.data) {
+                toast.error(error?.response?.data?.data);
+            } else {
+                toast.error('Failed to load notifications');
+            }
+        } finally {
+            setIsLoadingNotifications(false);
+        }
+    };
+
+    const getNotificationKey = (notification, index) => (
+        notification.typeId
+        ?? notification.id
+        ?? notification.accessId
+        ?? notification.notificationTypeId
+        ?? `${notification.title}-${index}`
+    );
+
+    const getNotificationTypeId = (notification) => (
+        notification.typeId
+        ?? notification.notificationTypeId
+        ?? notification.id
+        ?? notification.accessId
+    );
+
+    const hasNotificationChanges = notifications.some((notification, index) => (
+        Boolean(notification.disabled) !== Boolean(originalNotifications[index]?.disabled)
+    ));
+
+    const handleNotificationDisabledChange = (index) => {
+        setNotifications(prevNotifications => prevNotifications.map((notification, notificationIndex) => (
+            notificationIndex === index
+                ? { ...notification, disabled: !Boolean(notification.disabled) }
+                : notification
+        )));
+    };
+
+    const handleResetNotifications = () => {
+        setNotifications(originalNotifications.map(notification => ({ ...notification })));
+    };
+
+    const handleSaveNotifications = async () => {
+        setIsSavingNotifications(true);
+        try {
+            const baseUrl = getConfig().baseUrl;
+            const token = localStorage.getItem('token');
+            const payload = {
+                notificationTypes: notifications
+                    .filter(notification => !Boolean(notification.disabled))
+                    .map(notification => parseInt(getNotificationTypeId(notification)))
+                    .filter(notificationTypeId => !Number.isNaN(notificationTypeId))
+            };
+
+            await axios.put(`${baseUrl}/notification-access/assign`, payload, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const savedNotifications = notifications.map(notification => ({ ...notification }));
+            setOriginalNotifications(savedNotifications);
+            toast.success("Notification preferences saved successfully");
+        } catch (error) {
+            if (error?.response?.data?.code === 1) {
+                toast.info("Session expired. Please login again.");
+                navigate('/login');
+            } else if (error?.response?.data?.data) {
+                toast.error(error?.response?.data?.data);
+            } else {
+                toast.error("Failed to save notification preferences");
+            }
+        } finally {
+            setIsSavingNotifications(false);
         }
     };
 
@@ -286,8 +390,8 @@ const UserProfile = () => {
                             width: '120px',
                             height: '120px',
                             borderRadius: '50%',
-                            border: '4px solid #1e293b', // Matching dark theme bg assumption
-                            background: '#1e293b',
+                            border: '4px solid var(--modal-bg)',
+                            background: 'var(--modal-bg)',
                             margin: '0 auto 1rem',
                             display: 'flex',
                             justifyContent: 'center',
@@ -317,7 +421,7 @@ const UserProfile = () => {
                                     position: 'absolute',
                                     bottom: '0',
                                     right: '0',
-                                    background: '#3b82f6',
+                                    background: 'var(--info-color)',
                                     border: 'none',
                                     borderRadius: '50%',
                                     width: '32px',
@@ -352,7 +456,7 @@ const UserProfile = () => {
                             alignItems: 'center',
                             justifyContent: 'center',
                             gap: '0.5rem',
-                            color: '#94a3b8',
+                            color: 'var(--text-secondary)',
                             marginTop: '1rem',
                             fontSize: '0.9rem'
                         }}>
@@ -372,7 +476,7 @@ const UserProfile = () => {
                         null
                     ) : (
                         <h4 style={{
-                            borderBottom: '1px solid rgba(255,255,255,0.1)',
+                            borderBottom: '1px solid var(--border-color)',
                             paddingBottom: '1rem',
                             marginBottom: '1.5rem',
                             display: 'flex',
@@ -414,9 +518,9 @@ const UserProfile = () => {
                             <>
                                 {user.email ? (
                                     <div className="detail-group">
-                                        <label style={{ color: '#94a3b8', fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Email Address</label>
+                                        <label style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Email Address</label>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1rem' }}>
-                                            <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(59, 130, 246, 0.1)', color: '#60a5fa' }}>
+                                            <div style={{ padding: '8px', borderRadius: '8px', background: 'var(--info-bg)', color: 'var(--info-color)' }}>
                                                 <Mail size={18} />
                                             </div>
                                             {user.email}
@@ -426,9 +530,9 @@ const UserProfile = () => {
 
                                 {user.contact ? (
                                     <div className="detail-group">
-                                        <label style={{ color: '#94a3b8', fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Phone Number</label>
+                                        <label style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Phone Number</label>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1rem' }}>
-                                            <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(59, 130, 246, 0.1)', color: '#60a5fa' }}>
+                                            <div style={{ padding: '8px', borderRadius: '8px', background: 'var(--info-bg)', color: 'var(--info-color)' }}>
                                                 <Phone size={18} />
                                             </div>
                                             {user.contact}
@@ -439,9 +543,9 @@ const UserProfile = () => {
                                 {
                                     user.nic ? (
                                         <div className="detail-group">
-                                            <label style={{ color: '#94a3b8', fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>National ID (NIC)</label>
+                                            <label style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>National ID (NIC)</label>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1rem' }}>
-                                                <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(59, 130, 246, 0.1)', color: '#60a5fa' }}>
+                                                <div style={{ padding: '8px', borderRadius: '8px', background: 'var(--info-bg)', color: 'var(--info-color)' }}>
                                                     <FileText size={18} />
                                                 </div>
                                                 {user.nic}
@@ -453,7 +557,7 @@ const UserProfile = () => {
                         )}
 
                         <div className="detail-group">
-                            {/* <label style={{ color: '#94a3b8', fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Service Information</label> */}
+                            {/* <label style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Service Information</label> */}
                             {isLoadingProfile ? (
                                 <>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1rem', marginBottom: '0.5rem' }}>
@@ -473,26 +577,26 @@ const UserProfile = () => {
                                 </>
                             ) : (
                                 <>
-                                    <label style={{ color: '#94a3b8', fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Service Information</label>
+                                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Service Information</label>
                                     {user.role ? (
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1rem', marginBottom: '0.5rem' }}>
-                                            <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.1)', color: '#34d399' }}>
+                                            <div style={{ padding: '8px', borderRadius: '8px', background: 'var(--success-bg)', color: 'var(--success-color)' }}>
                                                 <Shield size={18} />
                                             </div>
                                             <div>
-                                                <div style={{ fontSize: '0.9rem', color: '#e2e8f0' }}>{user.role}</div>
-                                                <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Current Role</div>
+                                                <div style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>{user.role}</div>
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Current Role</div>
                                             </div>
                                         </div>
                                     ) : null}
                                     {user.serviceCenter ? (
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1rem', marginBottom: '0.5rem' }}>
-                                            <div style={{ padding: '8px', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.1)', color: '#f87171' }}>
+                                            <div style={{ padding: '8px', borderRadius: '8px', background: 'var(--danger-bg)', color: 'var(--danger-color)' }}>
                                                 <MapPin size={18} />
                                             </div>
                                             <div>
-                                                <div style={{ fontSize: '0.9rem', color: '#e2e8f0' }}>{user.serviceCenter}</div>
-                                                <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Service Center</div>
+                                                <div style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>{user.serviceCenter}</div>
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Service Center</div>
                                             </div>
                                         </div>
                                     ) : null
@@ -503,6 +607,145 @@ const UserProfile = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Notifications Section */}
+            <div className="profile-secondary-layout">
+                <div className="profile-secondary-spacer" />
+                <div className="content-card" style={{ marginTop: '1.5rem' }}>
+                <h4 style={{
+                    borderBottom: '1px solid var(--border-color)',
+                    paddingBottom: '1rem',
+                    marginBottom: '1.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                }}>
+                    <Bell size={20} className="text-primary" />
+                    Notifications
+                </h4>
+
+                {isLoadingNotifications ? (
+                    <div style={{
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '0.5rem',
+                        padding: '1rem',
+                        background: 'var(--hover-bg)'
+                    }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                            {Array.from(new Array(4)).map((_, i) => (
+                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.4rem' }}>
+                                    <Skeleton variant="rounded" width={16} height={16} sx={{ borderRadius: '3px', bgcolor: 'rgba(255,255,255,0.1)', flexShrink: 0 }} />
+                                    <Skeleton variant="text" width={i % 2 === 0 ? 120 : 160} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                ) : notifications.length === 0 ? (
+                    <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '2.5rem 1rem',
+                        gap: '0.75rem',
+                        color: 'var(--text-secondary)'
+                    }}>
+                        <BellOff size={36} style={{ opacity: 0.4 }} />
+                        <span style={{ fontSize: '0.9rem' }}>No notifications assigned</span>
+                    </div>
+                ) : (
+                    <>
+                    <div style={{
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '0.5rem',
+                        padding: '1rem',
+                        background: 'var(--hover-bg)'
+                    }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                        {notifications.map((notif, index) => (
+                            <div
+                                key={getNotificationKey(notif, index)}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.6rem',
+                                    color: 'var(--text-primary)',
+                                    padding: '0.4rem',
+                                    borderRadius: '0.25rem'
+                                }}
+                            >
+                                <input
+                                    type="checkbox"
+                                    checked={!Boolean(notif.disabled)}
+                                    onChange={() => handleNotificationDisabledChange(index)}
+                                    style={{
+                                        width: '16px',
+                                        height: '16px',
+                                        cursor: 'pointer',
+                                        accentColor: 'var(--info-color)',
+                                        flexShrink: 0
+                                    }}
+                                />
+                                <span style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', minWidth: 0 }}>
+                                    <span style={{ fontSize: '0.9rem', wordBreak: 'break-word', lineHeight: '1.4' }}>
+                                        {notif.title}
+                                    </span>
+                                    {notif.content ? (
+                                        <span style={{
+                                            fontSize: '0.78rem',
+                                            color: 'var(--text-secondary)',
+                                            lineHeight: '1.4',
+                                            wordBreak: 'break-word'
+                                        }}>
+                                            {notif.content}
+                                        </span>
+                                    ) : null}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                    </div>
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        gap: '0.75rem',
+                        marginTop: '1.25rem',
+                        paddingTop: '1.25rem',
+                        borderTop: '1px solid var(--border-color)',
+                        flexWrap: 'wrap'
+                    }}>
+                        <button
+                            type="button"
+                            className="secondary-btn"
+                            onClick={handleResetNotifications}
+                            disabled={!hasNotificationChanges || isSavingNotifications}
+                            style={{
+                                opacity: (!hasNotificationChanges || isSavingNotifications) ? 0.55 : 1,
+                                cursor: (!hasNotificationChanges || isSavingNotifications) ? 'not-allowed' : 'pointer'
+                            }}
+                        >
+                            <RotateCcw size={16} />
+                            <span>Reset</span>
+                        </button>
+                        <button
+                            type="button"
+                            className="primary-btn"
+                            onClick={handleSaveNotifications}
+                            disabled={!hasNotificationChanges || isSavingNotifications}
+                            style={{
+                                opacity: (!hasNotificationChanges || isSavingNotifications) ? 0.55 : 1,
+                                cursor: (!hasNotificationChanges || isSavingNotifications) ? 'not-allowed' : 'pointer'
+                            }}
+                        >
+                            {isSavingNotifications ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
+                            <span>{isSavingNotifications ? 'Saving...' : 'Save'}</span>
+                        </button>
+                    </div>
+                    </>
+                )}
+                </div>
+            </div>
+
             {/* Edit Profile Modal */}
             {isEditing && (
                 <div className="modal-overlay" onClick={() => setIsEditing(false)}>
@@ -599,7 +842,7 @@ const UserProfile = () => {
                                     <div className="input-group">
                                         <Shield className="input-icon" size={18} />
                                         {isLoadingRoles ? (
-                                            <div style={{ padding: '0.8rem 0.8rem 0.8rem 2.5rem', color: '#94a3b8', fontSize: '0.9rem' }}>Loading...</div>
+                                            <div style={{ padding: '0.8rem 0.8rem 0.8rem 2.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Loading...</div>
                                         ) : (
                                             <select
                                                 name="roleId"

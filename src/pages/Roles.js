@@ -153,16 +153,17 @@ const Roles = () => {
                 <table className="data-table">
                     <thead>
                         <tr>
-                            <th>Role Name</th>
-                            <th>Permissions</th>
-                            <th className="text-right">Actions</th>
+                            <th style={{ width: '20%' }}>Role Name</th>
+                            <th style={{ width: '35%' }}>Permissions</th>
+                            <th style={{ width: '35%' }}>Notifications</th>
+                            <th style={{ width: '10%' }} className="text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {isLoadingRoles ? (
                             Array.from(new Array(5)).map((_, i) => (
                                 <tr key={i}>
-                                    <td style={{ width: '25%' }}>
+                                    <td>
                                         <div className="role-cell">
                                             <Skeleton variant="circular" width={16} height={16} sx={{ flexShrink: 0, bgcolor: 'rgba(255,255,255,0.1)' }} />
                                             <Skeleton variant="text" width={i % 2 === 0 ? "80%" : "60%"} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
@@ -179,6 +180,14 @@ const Roles = () => {
                                         </div>
                                     </td>
                                     <td>
+                                        <div className="permissions-list mobile-hidden">
+                                            <Skeleton variant="rounded" width={60} height={24} sx={{ borderRadius: '12px', bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                        </div>
+                                        <div className="desktop-hidden" style={{ alignItems: 'center' }}>
+                                            <Skeleton variant="rounded" width={100} height={24} sx={{ borderRadius: '12px', bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                        </div>
+                                    </td>
+                                    <td>
                                         <div className="action-buttons justify-end">
                                             <Skeleton variant="circular" width={32} height={32} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
                                             <Skeleton variant="circular" width={32} height={32} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
@@ -188,14 +197,14 @@ const Roles = () => {
                             ))
                         ) : roles.length === 0 ? (
                             <tr>
-                                <td colSpan="3" className="text-center" style={{ padding: '2rem' }}>
+                                <td colSpan="4" className="text-center" style={{ padding: '2rem' }}>
                                     <div style={{ color: 'var(--text-secondary)' }}>No roles found</div>
                                 </td>
                             </tr>
                         ) : (
                             roles.map((role) => (
                                 <tr key={role.id}>
-                                    <td style={{ width: '25%' }}>
+                                    <td>
                                         <div className="role-cell">
                                             <Shield size={16} className="text-secondary" style={{ flexShrink: 0 }} />
                                             <span className="font-medium">{role.name}</span>
@@ -203,14 +212,30 @@ const Roles = () => {
                                     </td>
                                     <td>
                                         <div className="permissions-list mobile-hidden">
-                                            {role.permissions.map((perm, index) => (
+                                            {role.permissions && role.permissions.length > 0 ? role.permissions.map((perm, index) => (
                                                 <span key={index} className="badge-pill">{perm}</span>
-                                            ))}
+                                            )) : <span className="text-muted">-</span>}
                                         </div>
                                         <div className="desktop-hidden" style={{ alignItems: 'center' }}>
                                             <span className="badge-pill" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#60a5fa' }}>
-                                                {role.permissions.length}
+                                                {role.permissions?.length || 0}
                                             </span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div className="permissions-list mobile-hidden">
+                                            {role.notifications && role.notifications.length > 0 ? role.notifications.map((notif, index) => (
+                                                <span key={index} className="badge-pill badge-info" style={{ background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8' }}>{notif}</span>
+                                            )) : <span className="text-muted">-</span>}
+                                        </div>
+                                        <div className="desktop-hidden" style={{ alignItems: 'center' }}>
+                                            {role.notifications && role.notifications.length > 0 ? (
+                                                <span className="badge-pill" style={{ background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8' }}>
+                                                    {role.notifications.length}
+                                                </span>
+                                            ) : (
+                                                <span className="text-muted">-</span>
+                                            )}
                                         </div>
                                     </td>
                                     <td>

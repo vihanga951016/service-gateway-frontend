@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Shield, MapPin, Briefcase, ClipboardList, Layers, Calendar, X } from 'lucide-react';
+import { LayoutDashboard, Users, Shield, MapPin, Briefcase, ClipboardList, Layers, Calendar, X, Bell } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { Skeleton } from '@mui/material';
 
@@ -51,6 +51,16 @@ const Sidebar = ({ isOpen, onClose }) => {
                     <ClipboardList size={20} />
                     <span>Jobs</span>
                 </NavLink>
+                {hasPermission('Notification Management') && (
+                    <NavLink
+                        to="/notifications"
+                        className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                        onClick={() => window.innerWidth < 1024 && onClose()}
+                    >
+                        <Bell size={20} />
+                        <span>Notifications</span>
+                    </NavLink>
+                )}
 
                 {hasPermission('User Management') && (
                     <NavLink
