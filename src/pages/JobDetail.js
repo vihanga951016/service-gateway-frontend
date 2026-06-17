@@ -192,7 +192,8 @@ const JobDetail = () => {
                                     state: {
                                         selectedJobId: id,
                                         selectedCenter: location.state?.selectedCenter,
-                                        selectedDate: location.state?.selectedDate
+                                        selectedDate: location.state?.selectedDate,
+                                        viewMode: location.state?.viewMode
                                     }
                                 });
                             }
@@ -365,7 +366,7 @@ const JobDetail = () => {
                                                     }}>
                                                         {step.service}
                                                         {step.pointName && (
-                                                            <span className="badge-pill" style={{ marginLeft: '8px', verticalAlign: 'middle', fontSize: '0.7rem' }}>
+                                                            <span className="commit-badge-count" style={{ marginLeft: '8px', verticalAlign: 'middle', fontSize: '0.7rem' }}>
                                                                 {step.pointName}
                                                             </span>
                                                         )}

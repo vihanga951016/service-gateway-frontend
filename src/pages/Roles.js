@@ -198,13 +198,13 @@ const Roles = () => {
 
     const renderPermissionBadgeContent = (permissionName, allowed) => (
         <>
-            {!allowed && (
+            {/* {!allowed && (
                 <AlertTriangle
                     size={13}
                     aria-label="Permission not allowed"
                     style={{ color: 'var(--warning-color)', flexShrink: 0 }}
                 />
-            )}
+            )} */}
             <span>{permissionName}</span>
         </>
     );
@@ -500,7 +500,7 @@ const Roles = () => {
 
             <div className="content-card no-padding">
                 <div className="table-responsive">
-                    <table className="data-table">
+                    <table className="data-table roles-table">
                         <thead>
                             <tr>
                                 <th className="col-role-name">Role Name</th>
@@ -576,7 +576,7 @@ const Roles = () => {
                                                                     };
 
                                                                     return permissionName === EXCLUDED_PERMISSION_POPUP_NAME || !canOpenPermissionAccessPopup ? (
-                                                                        <span key={index} className="badge-pill" style={badgeStyle}>
+                                                                        <span key={index} className="commit-badge-count" style={badgeStyle}>
                                                                             {permissionName === EXCLUDED_PERMISSION_POPUP_NAME
                                                                                 ? permissionName
                                                                                 : renderPermissionBadgeContent(permissionName, allowed)}
@@ -585,7 +585,7 @@ const Roles = () => {
                                                                         <button
                                                                             key={index}
                                                                             type="button"
-                                                                            className="badge-pill"
+                                                                            className={`${allowed ? 'commit-badge-count' : 'commit-badge-count-disabled'}`}
                                                                             onClick={() => handlePermissionClick(role, perm)}
                                                                             style={{ ...badgeStyle, border: 'none', cursor: 'pointer' }}
                                                                         >

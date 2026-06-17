@@ -71,7 +71,7 @@ const Jobs = () => {
     const [isLoadingJobList, setIsLoadingJobList] = useState(false);
     const [isLoadingCenters, setIsLoadingCenters] = useState(true);
     const [highlightedJobId, setHighlightedJobId] = useState(null);
-    const [viewMode, setViewMode] = useState('list');
+    const [viewMode, setViewMode] = useState(location.state?.viewMode || 'list');
 
 
     const { hasPermissionAccess } = useUser();
@@ -361,7 +361,7 @@ const Jobs = () => {
                             <div className="view-toggle-wrapper">
                                 <button
                                     className={`view-toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
-                                    onClick={() => setViewMode('list')}
+                                    onClick={() => { setViewMode('list'); navigate(location.pathname, { replace: true, state: { ...location.state, viewMode: 'list' } }); }}
                                     title="List View"
                                 >
                                     <List size={16} />
@@ -369,7 +369,7 @@ const Jobs = () => {
                                 </button>
                                 <button
                                     className={`view-toggle-btn ${viewMode === 'kanban' ? 'active' : ''}`}
-                                    onClick={() => setViewMode('kanban')}
+                                    onClick={() => { setViewMode('kanban'); navigate(location.pathname, { replace: true, state: { ...location.state, viewMode: 'kanban' } }); }}
                                     title="Kanban View"
                                 >
                                     <LayoutGrid size={16} />
@@ -410,7 +410,8 @@ const Jobs = () => {
                                                     onClick={() => navigate(`/jobs/${job.jobId}`, {
                                                         state: {
                                                             selectedCenter,
-                                                            selectedDate
+                                                            selectedDate,
+                                                            viewMode
                                                         }
                                                     })}
                                                 >
@@ -570,7 +571,8 @@ const Jobs = () => {
                                                                     onClick={() => navigate(`/jobs/${job.jobId}`, {
                                                                         state: {
                                                                             selectedCenter,
-                                                                            selectedDate
+                                                                            selectedDate,
+                                                                            viewMode
                                                                         }
                                                                     })}
                                                                     style={{ height: job.totalTime <= 12 ? '12%' : `${job.totalTime}%` }}
@@ -615,7 +617,8 @@ const Jobs = () => {
                                                                         onClick={() => navigate(`/jobs/${job.jobId}`, {
                                                                             state: {
                                                                                 selectedCenter,
-                                                                                selectedDate
+                                                                                selectedDate,
+                                                                                viewMode
                                                                             }
                                                                         })}
                                                                         style={{ height: job.totalTime <= 12 ? '12%' : `${job.totalTime}%` }}
